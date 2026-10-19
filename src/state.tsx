@@ -1,0 +1,191 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
+import { authConfigured, refreshSession, signOutRemote } from './lib/auth';
+import * as sync from './lib/sync';
+import { MAX_HISTORY, store } from './lib/storage';
+import { mediaKey } from './lib/types';
+import type { Media, Session, WatchEntry } from './lib/types';
+
+interface AppState {
+  favorites: Media[];
+  history: WatchEntry[];
+  provider: string;
+  setProvider: (id: string) => void;
+  isFavorite: (m: Media) => boolean;
+  toggleFavorite: (m: Media) => void;
+  recordWatch: (e: WatchEntry) => void;
+  removeWatch: (key: string) => void;
+  session: Session | null;
+  onSignedIn: (s: Session) => void;
+  signOut: () => void;
+  authOpen: boolean;
+  openAuth: () => void;
+  closeAuth: () => void;
+}
+
+const Ctx = createContext<AppState | null>(null);
+
+export function useApp(): AppState {
+  const v = useContext(Ctx);
+  if (!v) throw new Error('AppProvider missing');
+  return v;
+}
+
+const newestPerTitle = (list: WatchEntry[]): WatchEntry[] => {
+  const best = new Map<string, WatchEntry>();
+  for (const w of list) {
+    const k = mediaKey(w.media);
+    const cur = best.get(k);
+    if (!cur || w.watchedAt > cur.watchedAt) best.set(k, w);
+  }
+  return [...best.values()].sort((a, b) => b.watchedAt - a.watchedAt).slice(0, MAX_HISTORY);
+};
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [favorites, setFavorites] = useState<Media[]>(() => store.getFavorites());
+  const [history, setHistory] = useState<WatchEntry[]>(() => store.getHistory());
+  const [provider, setProviderState] = useState<string>(() => store.getProvider());
+  const [session, setSessionState] = useState<Session | null>(() => store.getSession());
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const favRef = useRef(favorites);
+  const histRef = useRef(history);
+  const sessionRef = useRef(session);
+
+  const applyFavorites = useCallback((list: Media[]) => {
+    favRef.current = list;
+    setFavorites(list);
+    store.saveFavorites(list);
+  }, []);
+  const applyHistory = useCallback((list: WatchEntry[]) => {
+    histRef.current = list;
+    setHistory(list);
+    store.saveHistory(list);
+  }, []);
+  const applySession = useCallback((s: Session | null) => {
+    sessionRef.current = s;
+    setSessionState(s);
+    store.saveSession(s);
+  }, []);
+
+  /** A valid access token (refreshed when close to expiry), or null when signed out / offline. */
+  const getToken = useCallback(async (): Promise<string | null> => {
+    const s = sessionRef.current;
+    if (!authConfigured || !s) return null;
+    if (s.expiresAt - Date.now() > 60_000) return s.accessToken;
+    const r = await refreshSession(s.refreshToken, s.email);
+    if (r.kind === 'ok') {
+      applySession(r.session);
+      return r.session.accessToken;
+    }
+    if (r.kind === 'rejected') applySession(null);
+    return null;
+  }, [applySession]);
+
+  // On load: if signed in, replace the local lists with the account's lists.
+  useEffect(() => {
+    if (!sessionRef.current) return;
+    void (async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const cloud = await sync.fetchCloud(token);
+        if (cloud) {
+          applyFavorites(cloud.favorites);
+          applyHistory(cloud.history);
+        }
+      } catch {
+        /* offline: keep the local copy */
+      }
+    })();
+  }, [getToken, applyFavorites, applyHistory]);
+
+  const background = (job: (token: string) => Promise<unknown>) => {
+    void (async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        await job(token);
+      } catch {
+        /* best effort */
+      }
+    })();
+  };
+
+  const toggleFavorite = (m: Media) => {
+    const key = mediaKey(m);
+    const has = favRef.current.some((x) => mediaKey(x) === key);
+    applyFavorites(has ? favRef.current.filter((x) => mediaKey(x) !== key) : [m, ...favRef.current]);
+    background((t) => (has ? sync.deleteFavorite(t, key) : sync.upsertFavorites(t, [m])));
+  };
+
+  const recordWatch = (e: WatchEntry) => {
+    const key = mediaKey(e.media);
+    applyHistory([e, ...histRef.current.filter((x) => mediaKey(x.media) !== key)].slice(0, MAX_HISTORY));
+    background((t) => sync.upsertHistory(t, [e]));
+  };
+
+  const removeWatch = (key: string) => {
+    applyHistory(histRef.current.filter((x) => mediaKey(x.media) !== key));
+    background((t) => sync.deleteWatch(t, key));
+  };
+
+  const onSignedIn = (s: Session) => {
+    applySession(s);
+    setAuthOpen(false);
+    // First sign-in on this device: combine device + account, newest per title wins.
+    void (async () => {
+      try {
+        const cloud = await sync.fetchCloud(s.accessToken);
+        if (!cloud) return;
+        const seen = new Set<string>();
+        const favs = [...favRef.current, ...cloud.favorites].filter((m) => {
+          const k = mediaKey(m);
+          if (seen.has(k)) return false;
+          seen.add(k);
+          return true;
+        });
+        const hist = newestPerTitle([...histRef.current, ...cloud.history]);
+        applyFavorites(favs);
+        applyHistory(hist);
+        if (favs.length) await sync.upsertFavorites(s.accessToken, favs);
+        if (hist.length) await sync.upsertHistory(s.accessToken, hist);
+      } catch {
+        /* the lists stay on this device */
+      }
+    })();
+  };
+
+  const signOut = () => {
+    const token = sessionRef.current?.accessToken ?? '';
+    applySession(null); // what is already on this device stays
+    void signOutRemote(token);
+  };
+
+  const value = useMemo<AppState>(
+    () => ({
+      favorites,
+      history,
+      provider,
+      setProvider: (id) => {
+        setProviderState(id);
+        store.saveProvider(id);
+      },
+      isFavorite: (m) => favorites.some((x) => mediaKey(x) === mediaKey(m)),
+      toggleFavorite,
+      recordWatch,
+      removeWatch,
+      session,
+      onSignedIn,
+      signOut,
+      authOpen,
+      openAuth: () => setAuthOpen(true),
+      closeAuth: () => setAuthOpen(false)
+    }),
+    // handlers read refs, so they only need to refresh with the data they sit next to
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [favorites, history, provider, session, authOpen]
+  );
+
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+}
