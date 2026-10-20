@@ -4,7 +4,7 @@ export interface Channel {
   name: string;
   country: string;
   categories: string[];
-  logo: string | null;
+  logos: string[];
   url: string;
   quality: string | null;
 }
@@ -36,8 +36,16 @@ export function loadChannels(): Promise<Channel[]> {
         : new Error("Can't reach the channel list. Check your internet connection.");
     }
 
-    const logoOf = new Map<string, string>();
-    for (const l of logos) if (l?.channel && l?.url && !logoOf.has(l.channel)) logoOf.set(l.channel, l.url);
+    // Several logo candidates per channel (many hosts are dead): https first, png/svg/webp first
+    const logoOf = new Map<string, string[]>();
+    for (const l of logos) {
+      if (!l?.channel || !l?.url) continue;
+      const list = logoOf.get(l.channel) ?? [];
+      if (!list.includes(l.url)) list.push(l.url);
+      logoOf.set(l.channel, list);
+    }
+    const score = (u: string) => (u.startsWith('https://') ? 0 : 2) + (/\.(png|svg|webp)(\?|$)/i.test(u) ? 0 : 1);
+    for (const [k, v] of logoOf) logoOf.set(k, v.sort((a, b) => score(a) - score(b)).slice(0, 4));
 
     // One stream per channel: prefer https, then higher quality
     const best = new Map<string, any>();
@@ -62,7 +70,7 @@ export function loadChannels(): Promise<Channel[]> {
         name: c.name,
         country: c.country ?? '',
         categories: cats,
-        logo: logoOf.get(c.id) ?? c.logo ?? null,
+        logos: logoOf.get(c.id) ?? (c.logo ? [c.logo] : []),
         url: s.url,
         quality: s.quality ?? null
       });

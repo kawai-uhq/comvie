@@ -216,8 +216,38 @@ h1, h2, h3 { font-family: var(--display); margin: 0; }
 .stats span { padding: 4px 12px; border-radius: 999px; background: var(--surface2); font-size: 13px; font-weight: 800; color: var(--cream); }
 .now .section { margin-top: 8px; }
 .live-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); margin-right: 6px; }
-.live-player { position: relative; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid var(--line); }
-.live-player video { width: 100%; height: 100%; background: #000; }
+.live-player { border-radius: 16px; overflow: hidden; background: #0c0710; border: 1px solid var(--line); }
+.live-player.fs { display: flex; flex-direction: column; border-radius: 0; border: 0; height: 100%; }
+.lp-head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.lp-logo { width: 44px; height: 44px; flex: none; aspect-ratio: auto; border-radius: 10px; background: #fff1; }
+.lp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lp-title { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.lp-title strong { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.lp-info small { color: var(--muted); text-transform: capitalize; }
+.badge { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: var(--surface2); color: var(--cream); font-size: 11px; font-weight: 800; letter-spacing: 0.04em; border: 0; }
+.badge.live { background: rgba(255, 107, 87, 0.2); color: var(--accent); }
+.btn-badge { cursor: pointer; }
+.lp-icon { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 233, 214, 0.06); color: var(--text); }
+.lp-icon:hover { background: rgba(255, 233, 214, 0.14); }
+.lp-icon.on { color: #ffc857; }
+.lp-stage { position: relative; aspect-ratio: 16 / 9; background: #000; }
+.live-player.fs .lp-stage { flex: 1; aspect-ratio: auto; min-height: 0; }
+.lp-stage video { width: 100%; height: 100%; background: #000; display: block; }
+.lp-spin { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.lp-bar { padding: 10px 14px 4px; }
+.lp-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.lp-play { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); }
+.lp-spacer { flex: 1; }
+.lp-chip { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 233, 214, 0.06); color: var(--text); font-weight: 800; font-size: 13px; }
+.lp-progress, .lp-volume { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--accent) var(--p, 100%), rgba(255, 233, 214, 0.18) var(--p, 100%)); outline-offset: 6px; }
+.lp-progress { width: 100%; display: block; }
+.lp-volume { width: 90px; }
+.lp-progress::-webkit-slider-thumb, .lp-volume::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--cream); border: 0; }
+.lp-progress::-moz-range-thumb, .lp-volume::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--cream); border: 0; }
+.lp-hint { margin: 4px 0 10px; text-align: center; font-size: 12px; color: var(--muted); }
+.lp-hint kbd { padding: 1px 6px; border-radius: 5px; background: var(--surface2); font: inherit; font-weight: 800; }
+.live-player.fs .lp-hint { display: none; }
+.live-error { border-radius: 0; }
 .live-error { position: absolute; inset: 0; display: grid; align-content: center; justify-items: center; gap: 8px; padding: 16px; text-align: center; background: rgba(8, 4, 12, 0.92); }
 .live-error h3 { font-size: 22px; }
 .live-error p { margin: 0; max-width: 460px; color: var(--muted); font-size: 14px; line-height: 1.5; }

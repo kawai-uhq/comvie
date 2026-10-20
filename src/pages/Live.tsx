@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import ChannelLogo from '../components/ChannelLogo';
 import LivePlayer from '../components/LivePlayer';
 import { Status } from '../components/Rows';
 import { countryName, flag, loadChannels } from '../lib/iptv';
@@ -31,6 +32,7 @@ export default function Live() {
   const [cat, setCat] = useState('all');
   const [shown, setShown] = useState(PAGE);
   const [favs, setFavs] = useState<string[]>(() => store.getTvFavs());
+  const listTop = useRef<HTMLDivElement>(null);
   const [recent, setRecent] = useState<string[]>(() => store.getTvRecent());
 
   const load = () => {
@@ -78,11 +80,13 @@ export default function Live() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const playNext = () => {
+  const step = (dir: 1 | -1) => {
     if (!filtered.length) return;
     const i = current ? filtered.findIndex((c) => c.id === current.id) : -1;
-    play(filtered[(i + 1) % filtered.length]);
+    play(filtered[(i + dir + filtered.length) % filtered.length]);
   };
+  const playNext = () => step(1);
+  const playPrev = () => step(-1);
 
   const toggleFav = (id: string) => {
     const next = favs.includes(id) ? favs.filter((x) => x !== id) : [id, ...favs];
@@ -103,7 +107,15 @@ export default function Live() {
         {current && (
           <section className="now">
             <h2 className="section"><span className="live-dot" aria-hidden="true" /> Now streaming: <span className="accent">{current.name}</span></h2>
-            <LivePlayer key={current.id} channel={current} onNext={playNext} />
+            <LivePlayer
+              key={current.id}
+              channel={current}
+              onNext={playNext}
+              onPrev={playPrev}
+              fav={favs.includes(current.id)}
+              onToggleFav={() => toggleFav(current.id)}
+              onShowList={() => listTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            />
           </section>
         )}
 
@@ -113,7 +125,7 @@ export default function Live() {
           <Status kind="loading" />
         ) : (
           <>
-            <div className="live-filters">
+            <div className="live-filters" ref={listTop}>
               <input className="field" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search channels by name, country or category…" aria-label="Search channels" />
               <select className="field select" value={country} onChange={(e) => setCountry(e.target.value)} aria-label="Country">
                 <option value="">All countries</option>
@@ -145,7 +157,7 @@ export default function Live() {
                       <button className={`star ${favs.includes(c.id) ? 'on' : ''}`} aria-label={favs.includes(c.id) ? `Remove ${c.name} from favorites` : `Add ${c.name} to favorites`} aria-pressed={favs.includes(c.id)} onClick={() => toggleFav(c.id)}>★</button>
                     </div>
                     <button className="channel-play" onClick={() => play(c)} aria-label={`Play ${c.name}`}>
-                      <span className="channel-logo">{c.logo ? <img src={c.logo} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <b>{c.name.slice(0, 2)}</b>}</span>
+                      <ChannelLogo name={c.name} logos={c.logos} />
                       <strong>{c.name}</strong>
                       <span className="channel-meta">
                         <small>{c.categories[0] ?? 'general'}</small>
