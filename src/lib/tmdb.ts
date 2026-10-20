@@ -67,6 +67,11 @@ export const tmdb = {
   trending: () => get('/trending/all/day?language=en-US').then((j) => list(j, 'all')),
   popular: (t: MediaType) => get(`/${t}/popular?language=en-US&page=1`).then((j) => list(j, t)),
   topRated: (t: MediaType) => get(`/${t}/top_rated?language=en-US&page=1`).then((j) => list(j, t)),
+  search: (q: string) => {
+    // encodeURIComponent leaves ! ' ( ) * ~ alone; encode them too so every title is safe to send
+    const enc = encodeURIComponent(q).replace(/[!'()*~]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase());
+    return get(`/search/multi?query=${enc}&include_adult=false&language=en-US&page=1`).then((j) => list(j, 'all'));
+  },
   anime: () =>
     get(
       '/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc&language=en-US&page=1'

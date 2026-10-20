@@ -1,62 +1,105 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Grid, Status } from '../components/Rows';
 import { tmdb } from '../lib/tmdb';
 import type { Media } from '../lib/types';
 
 export default function Search() {
-  const [sp, setSp] = useSearchParams();
+  const [sp] = useSearchParams();
   const urlQ = sp.get('q') ?? '';
   const [q, setQ] = useState(urlQ);
   const [results, setResults] = useState<Media[] | null>(null);
   const [top, setTop] = useState<Media[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const ticket = useRef(0); // only the newest request may update the page
 
-  // Follow the address bar (e.g. a search typed in the top bar), without eating spaces mid-typing
+  // A search sent from the top bar changes the address; follow it
   useEffect(() => {
-    setQ((cur) => (cur.trim() === urlQ ? cur : urlQ));
+    setQ(urlQ);
   }, [urlQ]);
 
   useEffect(() => {
     tmdb.trending().then(setTop).catch(() => undefined);
   }, []);
 
-  // Debounced search
+  const run = useCallback((term: string) => {
+    const id = ++ticket.current;
+    setBusy(true);
+    setError(null);
+    tmdb
+      .search(term)
+      .then((r) => {
+        if (id !== ticket.current) return;
+        setResults(r);
+        setBusy(false);
+      })
+      .catch((e: Error) => {
+        if (id !== ticket.current) return;
+        setError(e.message || "Couldn't search. Try again.");
+        setBusy(false);
+      });
+  }, []);
+
+  const keepUrl = (term: string) => {
+    // keeps the link shareable without re-rendering the page
+    try {
+      const path = window.location.pathname;
+      window.history.replaceState(window.history.state, '', term ? `${path}?q=${encodeURIComponent(term)}` : path);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Search shortly after typing stops
   useEffect(() => {
     const term = q.trim();
     if (!term) {
+      ticket.current++;
       setResults(null);
       setError(null);
+      setBusy(false);
+      keepUrl('');
       return;
     }
-    let live = true;
-    const t = setTimeout(() => {
-      setError(null);
-      tmdb
-        .search(term)
-        .then((r) => live && setResults(r))
-        .catch((e: Error) => live && setError(e.message));
-      setSp({ q: term }, { replace: true });
+    const t = window.setTimeout(() => {
+      run(term);
+      keepUrl(term);
     }, 350);
-    return () => {
-      live = false;
-      clearTimeout(t);
-    };
-  }, [q, setSp]);
+    return () => window.clearTimeout(t);
+  }, [q, run]);
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const term = q.trim();
+    if (term) {
+      run(term);
+      keepUrl(term);
+      (document.activeElement as HTMLElement | null)?.blur();
+    }
+  };
 
   return (
     <main className="page pad-top">
       <div className="container">
-        <input
-          className="field big"
-          autoFocus
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search movies, shows, anime…"
-          aria-label="Search"
-        />
+        <form onSubmit={submit} role="search">
+          <input
+            className="field big"
+            type="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            autoFocus
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search movies, shows, anime…"
+            aria-label="Search"
+          />
+        </form>
         {error ? (
-          <Status kind="error" text={error} />
+          <Status kind="error" text={error} retry={() => run(q.trim())} />
+        ) : results === null && busy ? (
+          <Status kind="loading" />
         ) : results === null ? (
           <>
             <h2 className="section">Top Searches</h2>
