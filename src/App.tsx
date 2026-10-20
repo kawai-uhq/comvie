@@ -5,11 +5,8 @@ import Navbar from './components/Navbar';
 import Detail from './pages/Detail';
 import GenreResults from './pages/GenreResults';
 import Genres from './pages/Genres';
-import GenreResults from './pages/GenreResults';
-import Genres from './pages/Genres';
 import Home from './pages/Home';
 import Live from './pages/Live';
-import LiveTV from './pages/LiveTV';
 import MyList from './pages/MyList';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
@@ -30,12 +27,9 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/genres" element={<Genres />} />
-        <Route path="/genre/:type/:id" element={<GenreResults />} />
-        <Route path="/live" element={<LiveTV />} />
-        <Route path="/list" element={<MyList />} />
-        <Route path="/genres" element={<Genres />} />
         <Route path="/genres/:type/:id" element={<GenreResults />} />
         <Route path="/live" element={<Live />} />
+        <Route path="/list" element={<MyList />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/title/:type/:id" element={<Detail />} />
         <Route path="/watch/:type/:id" element={<Watch />} />
