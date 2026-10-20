@@ -8,19 +8,19 @@ export interface Provider {
 export const providers: Provider[] = [
   {
     id: 'cinesrc',
-    name: 'CineSrc',
+    name: 'Server 1',
     movie: (id) => `https://cinesrc.st/embed/movie/${id}`,
     tv: (id, s, e) => `https://cinesrc.st/embed/tv/${id}?s=${s}&e=${e}`
   },
   {
     id: 'vidlink',
-    name: 'VidLink',
+    name: 'Server 2',
     movie: (id) => `https://vidlink.pro/movie/${id}`,
     tv: (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}`
   },
   {
     id: 'vidfast',
-    name: 'VidFast',
+    name: 'Server 3',
     movie: (id) => `https://vidfast.vc/movie/${id}?autoPlay=true`,
     tv: (id, s, e) => `https://vidfast.vc/tv/${id}/${s}/${e}?autoPlay=true`
   }

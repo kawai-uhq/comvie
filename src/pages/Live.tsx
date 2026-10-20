@@ -127,7 +127,7 @@ export default function Live() {
         <section className="live-hero">
           <span className="pill">FREE PUBLIC CHANNELS</span>
           <h1 className="title">Live TV &amp; <span className="accent">World Channels</span></h1>
-          <p className="muted">Free public broadcasts from around the world, from the open iptv-org directory. Some channels are offline or blocked in your region.</p>
+          <p className="muted">Free public broadcasts from around the world, from around the web. Some channels are offline or blocked in your region.</p>
           {all && !current && lastChannel && (
             <button className="btn primary" onClick={() => play(lastChannel)}>▶ Resume {lastChannel.name}</button>
           )}

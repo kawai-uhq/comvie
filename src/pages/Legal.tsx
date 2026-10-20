@@ -32,7 +32,7 @@ export function About() {
       <ul>
         <li>Titles, posters, descriptions, cast and trailers come from <strong>TMDB</strong> and YouTube. This product uses the TMDB API but is not endorsed or certified by TMDB.</li>
         <li><strong>Comvie does not host, store or upload any video files.</strong> When you press Play, the site opens a player provided by a third party. What that player shows is controlled by its owner.</li>
-        <li>Live TV lists free, publicly available channels from the open <strong>iptv-org</strong> directory. Channels can go offline or be blocked in your region at any time.</li>
+        <li>Live TV lists free, publicly available channels gathered from an open public directory. Channels can go offline or be blocked in your region at any time.</li>
       </ul>
       <h2>Contact</h2>
       <p>Questions or feedback: <Contact />.</p>
@@ -76,7 +76,7 @@ export function Privacy() {
       <ul>
         <li><strong>TMDB</strong> provides titles and pictures. Your browser loads images directly from TMDB's servers, so TMDB can see your IP address.</li>
         <li><strong>Third-party players</strong> and <strong>YouTube</strong> (trailers, loaded in privacy-enhanced mode) run their own code and may set cookies or collect data under their own policies.</li>
-        <li><strong>iptv-org</strong> and each TV channel's stream host are contacted when you use Live TV.</li>
+        <li><strong>The public channel directory</strong> and each TV channel's stream host are contacted when you use Live TV.</li>
         <li><strong>Vercel</strong> hosts the site and keeps standard server logs.</li>
       </ul>
       <h2>Contact</h2>
