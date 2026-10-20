@@ -63,10 +63,20 @@ export const tmdb = {
     get(
       '/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc&language=en-US&page=1'
     ).then((j) => list(j, 'tv')),
+  discover: (t: MediaType, genre: number, page: number) =>
+    get(
+      `/discover/${t}?with_genres=${genre}&sort_by=popularity.desc&include_adult=false&vote_count.gte=${
+        t === 'movie' ? 50 : 20
+      }&language=en-US&page=${page}`
+    ).then((j) => ({ items: list(j, t), totalPages: (j?.total_pages as number) ?? 1 })),
   search: (q: string) =>
     get(`/search/multi?query=${encodeURIComponent(q)}&include_adult=false&language=en-US&page=1`).then(
       (j) => list(j, 'all')
     ),
+  discover: (t: MediaType, genre: number, page: number) =>
+    get(
+      `/discover/${t}?with_genres=${genre}&sort_by=popularity.desc&include_adult=false&language=en-US&page=${page}`
+    ).then((j) => ({ items: list(j, t), pages: (j?.total_pages as number) || 1 })),
   similar: async (t: MediaType, id: number) => {
     const rec = await get(`/${t}/${id}/recommendations?language=en-US&page=1`).then((j) => list(j, t));
     if (rec.length) return rec;

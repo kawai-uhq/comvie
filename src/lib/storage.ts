@@ -29,6 +29,14 @@ export const store = {
   saveProvider: (v: string) => write('comvie.provider', v),
   getProtect: () => read<boolean>('comvie.protect', true),
   saveProtect: (v: boolean) => write('comvie.protect', v),
+  getTvFavs: () => read<string[]>('comvie.tv.favs', []),
+  saveTvFavs: (v: string[]) => write('comvie.tv.favs', v),
+  getTvRecent: () => read<string[]>('comvie.tv.recent', []),
+  saveTvRecent: (v: string[]) => write('comvie.tv.recent', v),
+  getTvFavs: () => read<string[]>('comvie.tvfavs', []),
+  saveTvFavs: (v: string[]) => write('comvie.tvfavs', v),
+  getTvRecent: () => read<string[]>('comvie.tvrecent', []),
+  saveTvRecent: (v: string[]) => write('comvie.tvrecent', v),
   getSession: () => read<Session | null>('comvie.session', null),
   saveSession: (v: Session | null) => write('comvie.session', v)
 };
