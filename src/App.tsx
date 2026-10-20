@@ -5,8 +5,11 @@ import Navbar from './components/Navbar';
 import Detail from './pages/Detail';
 import GenreResults from './pages/GenreResults';
 import Genres from './pages/Genres';
+import Footer from './components/Footer';
 import Home from './pages/Home';
+import { About, Privacy, Takedown, Terms } from './pages/Legal';
 import Live from './pages/Live';
+import PersonPage from './pages/Person';
 import MyList from './pages/MyList';
 import Search from './pages/Search';
 import Settings from './pages/Settings';
@@ -30,11 +33,17 @@ export default function App() {
         <Route path="/genres/:type/:id" element={<GenreResults />} />
         <Route path="/live" element={<Live />} />
         <Route path="/list" element={<MyList />} />
+        <Route path="/person/:id" element={<PersonPage />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/takedown" element={<Takedown />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/title/:type/:id" element={<Detail />} />
         <Route path="/watch/:type/:id" element={<Watch />} />
         <Route path="*" element={<Home />} />
       </Routes>
+      {!watching && <Footer />}
       <AuthModal />
     </>
   );

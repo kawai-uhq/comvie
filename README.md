@@ -38,6 +38,11 @@ Until the two `VITE_SUPABASE_...` variables are set, the site shows "Sign-in is 
 4. **SQL Editor:** run `supabase/schema.sql`.
 5. **Project Settings -> API:** put the Project URL and the anon/publishable key into the two `VITE_` variables. Never use the service_role key.
 
+## Other settings
+
+- `VITE_CONTACT_EMAIL` (optional): the contact address shown on the About / Terms / Privacy / Takedown pages.
+- Trailers: hovering a poster (on a device with a mouse) plays its YouTube trailer on the picture after a moment; the detail page has a Trailer button.
+
 ## Local development
 
 ```bash

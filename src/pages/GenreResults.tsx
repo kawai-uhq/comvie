@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Grid, Status } from '../components/Rows';
+import { Grid, GridSkeleton, Status } from '../components/Rows';
 import { findGenre } from '../lib/genres';
 import { tmdb } from '../lib/tmdb';
 import { mediaKey } from '../lib/types';
@@ -52,7 +52,7 @@ export default function GenreResults() {
         {error ? (
           <Status kind="error" text={error} retry={() => load(page + 1)} />
         ) : items.length === 0 && loading ? (
-          <Status kind="loading" />
+          <GridSkeleton />
         ) : (
           <>
             <Grid items={items} />

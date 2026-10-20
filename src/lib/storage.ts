@@ -33,6 +33,10 @@ export const store = {
   saveTvFavs: (v: string[]) => write('comvie.tvfavs', v),
   getTvRecent: () => read<string[]>('comvie.tvrecent', []),
   saveTvRecent: (v: string[]) => write('comvie.tvrecent', v),
+  getTvLast: () => read<string>('comvie.tvlast', ''),
+  saveTvLast: (v: string) => write('comvie.tvlast', v),
+  getTvBad: () => read<Record<string, number>>('comvie.tvbad', {}),
+  saveTvBad: (v: Record<string, number>) => write('comvie.tvbad', v),
   getSession: () => read<Session | null>('comvie.session', null),
   saveSession: (v: Session | null) => write('comvie.session', v)
 };

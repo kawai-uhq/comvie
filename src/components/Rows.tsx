@@ -1,9 +1,9 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { IMG } from '../lib/tmdb';
+import { IMG, posterSet, posterSrc, tmdb } from '../lib/tmdb';
 import { mediaKey, progressLabel } from '../lib/types';
-import type { Media, WatchEntry } from '../lib/types';
+import type { Details, Media, WatchEntry } from '../lib/types';
 
 export function Row({ title, children }: { title: string; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -23,15 +23,64 @@ export function Row({ title, children }: { title: string; children: ReactNode })
   );
 }
 
+const canHover = () =>
+  typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+/** Poster card. On devices with a mouse, hovering for a moment plays the trailer on the picture. */
 export function Poster({ m, rank }: { m: Media; rank?: number }) {
+  const [trailer, setTrailer] = useState<string | null>(null);
+  const timer = useRef<number | undefined>(undefined);
+  const hovering = useRef(false);
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const enter = () => {
+    if (!canHover()) return;
+    hovering.current = true;
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => {
+      tmdb
+        .trailer(m.type, m.id)
+        .then((k) => hovering.current && setTrailer(k))
+        .catch(() => undefined);
+    }, 700);
+  };
+  const leave = () => {
+    hovering.current = false;
+    window.clearTimeout(timer.current);
+    setTrailer(null);
+  };
+
   return (
-    <Link to={`/title/${m.type}/${m.id}`} className={`poster ${rank ? 'ranked' : ''}`} title={m.title}>
+    <Link
+      to={`/title/${m.type}/${m.id}`}
+      className={`poster ${rank ? 'ranked' : ''}`}
+      title={m.title}
+      onMouseEnter={enter}
+      onMouseLeave={leave}
+    >
       {rank ? <span className="rank" aria-hidden="true">{rank}</span> : null}
       <span className="poster-img">
         {m.poster ? (
-          <img src={IMG.card + m.poster} alt={m.title} loading="lazy" />
+          <img
+            src={posterSrc(m.poster)}
+            srcSet={posterSet(m.poster)}
+            sizes="(max-width: 760px) 34vw, 190px"
+            alt={m.title}
+            loading="lazy"
+          />
         ) : (
           <span className="poster-missing">{m.title}</span>
+        )}
+        {trailer && (
+          <iframe
+            className="poster-trailer"
+            src={`https://www.youtube-nocookie.com/embed/${trailer}?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3&loop=1&playlist=${trailer}`}
+            allow="autoplay; encrypted-media"
+            tabIndex={-1}
+            title=""
+            aria-hidden="true"
+          />
         )}
       </span>
     </Link>
@@ -50,30 +99,55 @@ export function PosterRow({ title, items, top10 }: { title: string; items: Media
   );
 }
 
+/** True when a newer episode than the one last watched aired in the past three weeks. */
+function hasNewEpisode(w: WatchEntry, d: Details): boolean {
+  const la = d.lastAired;
+  if (!la || w.media.type !== 'tv' || !w.season || !w.episode) return false;
+  const age = Date.now() - new Date(la.date).getTime();
+  if (!(age >= 0 && age < 21 * 86_400_000)) return false;
+  return la.season > w.season || (la.season === w.season && la.episode > w.episode);
+}
+
+function ContinueCard({ w, onRemove }: { w: WatchEntry; onRemove: (key: string) => void }) {
+  const m = w.media;
+  const [fresh, setFresh] = useState(false);
+
+  useEffect(() => {
+    if (m.type !== 'tv') return;
+    let live = true;
+    tmdb.details('tv', m.id).then((d) => live && setFresh(hasNewEpisode(w, d))).catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [m.id, m.type, w]);
+
+  const to = `/watch/${m.type}/${m.id}?s=${w.season ?? 1}&e=${w.episode ?? 1}&p=${w.providerId}`;
+  const img = m.backdrop ? IMG.large + m.backdrop : m.poster ? posterSrc(m.poster) : null;
+  return (
+    <div className="continue">
+      <Link to={to} className="continue-img" aria-label={`Resume ${m.title}`}>
+        {img && <img src={img} alt="" loading="lazy" />}
+        {fresh && <span className="new-badge">New episode</span>}
+        <span className="play-badge" aria-hidden="true">▶</span>
+      </Link>
+      <div className="continue-meta">
+        <div>
+          <strong>{m.title}</strong>
+          <small>{progressLabel(w)}</small>
+        </div>
+        <button className="x" aria-label={`Remove ${m.title} from Continue Watching`} onClick={() => onRemove(mediaKey(m))}>✕</button>
+      </div>
+    </div>
+  );
+}
+
 export function ContinueRow({ items, onRemove }: { items: WatchEntry[]; onRemove: (key: string) => void }) {
   if (!items.length) return null;
   return (
     <Row title="Continue Watching">
-      {items.map((w) => {
-        const m = w.media;
-        const to = `/watch/${m.type}/${m.id}?s=${w.season ?? 1}&e=${w.episode ?? 1}&p=${w.providerId}`;
-        const img = m.backdrop ? IMG.large + m.backdrop : m.poster ? IMG.card + m.poster : null;
-        return (
-          <div className="continue" key={mediaKey(m)}>
-            <Link to={to} className="continue-img" aria-label={`Resume ${m.title}`}>
-              {img && <img src={img} alt="" loading="lazy" />}
-              <span className="play-badge" aria-hidden="true">▶</span>
-            </Link>
-            <div className="continue-meta">
-              <div>
-                <strong>{m.title}</strong>
-                <small>{progressLabel(w)}</small>
-              </div>
-              <button className="x" aria-label={`Remove ${m.title} from Continue Watching`} onClick={() => onRemove(mediaKey(m))}>✕</button>
-            </div>
-          </div>
-        );
-      })}
+      {items.map((w) => (
+        <ContinueCard key={mediaKey(w.media)} w={w} onRemove={onRemove} />
+      ))}
     </Row>
   );
 }
@@ -94,6 +168,47 @@ export function Status({ kind, text, retry }: { kind: 'loading' | 'error' | 'emp
     <div className="status">
       <p>{text}</p>
       {kind === 'error' && retry && <button className="btn" onClick={retry}>Try again</button>}
+    </div>
+  );
+}
+
+/* Loading placeholders that match the real layout */
+export function HomeSkeleton() {
+  return (
+    <main className="page" aria-busy="true" aria-label="Loading">
+      <div className="sk sk-billboard" />
+      <div className="chips">
+        {[0, 1, 2, 3].map((i) => <div key={i} className="sk sk-chip" />)}
+      </div>
+      {[0, 1, 2].map((r) => (
+        <section className="row" key={r}>
+          <div className="sk sk-title" style={{ marginLeft: 'var(--pad)' }} />
+          <div className="row-scroll">
+            {Array.from({ length: 9 }, (_, i) => <div key={i} className="sk sk-poster" />)}
+          </div>
+        </section>
+      ))}
+    </main>
+  );
+}
+
+export function DetailSkeleton() {
+  return (
+    <main className="page" aria-busy="true" aria-label="Loading">
+      <div className="sk sk-billboard" />
+      <div className="container">
+        <div className="sk sk-line" style={{ width: 'min(700px, 100%)', marginTop: 24 }} />
+        <div className="sk sk-line" style={{ width: 'min(560px, 90%)' }} />
+        <div className="sk sk-line" style={{ width: 'min(620px, 95%)' }} />
+      </div>
+    </main>
+  );
+}
+
+export function GridSkeleton() {
+  return (
+    <div className="grid" aria-busy="true" aria-label="Loading">
+      {Array.from({ length: 12 }, (_, i) => <div key={i} className="sk sk-grid" />)}
     </div>
   );
 }

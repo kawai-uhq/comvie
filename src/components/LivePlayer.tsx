@@ -10,6 +10,8 @@ interface Props {
   fav: boolean;
   onToggleFav: () => void;
   onShowList: () => void;
+  onFail?: () => void;
+  onOk?: () => void;
 }
 
 const fmt = (sec: number) => {
@@ -39,7 +41,7 @@ const I = {
   star: 'M12 3.5l2.6 5.5 6 .8-4.4 4.1 1.1 6L12 17l-5.3 2.9 1.1-6L3.4 9.8l6-.8z'
 };
 
-export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, onShowList }: Props) {
+export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, onShowList, onFail, onOk }: Props) {
   const box = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState(false);
@@ -52,6 +54,12 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
   const [behind, setBehind] = useState(0); // seconds behind the live edge
   const [progress, setProgress] = useState(1); // 0..1 inside the seekable window
   const [fullscreen, setFullscreen] = useState(false);
+  const cb = useRef({ onFail, onOk });
+  cb.current = { onFail, onOk };
+  const fail = useCallback(() => {
+    setError(true);
+    cb.current.onFail?.();
+  }, []);
 
   // Load the stream
   useEffect(() => {
@@ -70,7 +78,7 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
           const hls = new Hls({ lowLatencyMode: true });
           cleanup = () => hls.destroy();
           hls.on(Hls.Events.ERROR, (_e, data) => {
-            if (data.fatal) setError(true);
+            if (data.fatal) fail();
           });
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             void el.play().catch(() => undefined);
@@ -81,10 +89,10 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
           el.src = channel.url;
           void el.play().catch(() => undefined);
         } else {
-          setError(true);
+          fail();
         }
       } catch {
-        if (!destroyed) setError(true);
+        if (!destroyed) fail();
       }
     })();
 
@@ -94,7 +102,7 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
       el.removeAttribute('src');
       el.load();
     };
-  }, [channel.url, attempt]);
+  }, [channel.url, attempt, fail]);
 
   // Mirror the video's state into the custom controls
   useEffect(() => {
@@ -118,9 +126,10 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
     const off = (n: string, f: () => void) => el.removeEventListener(n, f);
     const wait = () => setBuffering(true);
     const ready = () => setBuffering(false);
+    const ok = () => cb.current.onOk?.();
     const evs: [string, () => void][] = [
       ['play', sync], ['pause', sync], ['volumechange', sync], ['timeupdate', time],
-      ['waiting', wait], ['playing', ready], ['canplay', ready]
+      ['waiting', wait], ['playing', ready], ['playing', ok], ['canplay', ready]
     ];
     evs.forEach(([n, f]) => on(n, f));
     sync();
@@ -219,7 +228,7 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
       </div>
 
       <div className="lp-stage">
-        <video ref={video} playsInline onClick={togglePlay} />
+        <video ref={video} playsInline onClick={togglePlay} onError={fail} />
         {buffering && !error && <div className="lp-spin"><div className="spinner" aria-label="Loading" /></div>}
         {error && (
           <div className="live-error" role="alert">

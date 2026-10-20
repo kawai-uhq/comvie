@@ -276,3 +276,60 @@ h1, h2, h3 { font-family: var(--display); margin: 0; }
   .tabbar { grid-template-columns: repeat(5, 1fr); }
   .live-hero { padding: 20px; }
 }
+
+/* Billboard slider */
+.billboard { display: block; }
+.slide { position: absolute; inset: 0; display: flex; align-items: flex-end; opacity: 0; visibility: hidden; transition: opacity 0.9s ease, visibility 0s 0.9s; }
+.slide.on { opacity: 1; visibility: visible; transition: opacity 0.9s ease, visibility 0s; z-index: 1; }
+.slide > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.dots { position: absolute; z-index: 3; right: var(--pad); bottom: 22px; display: flex; gap: 8px; }
+.dots button { width: 10px; height: 10px; padding: 0; border-radius: 999px; border: 0; background: rgba(255, 233, 214, 0.4); transition: width 0.25s, background 0.25s; position: relative; }
+.dots button::after { content: ''; position: absolute; inset: -17px -6px; }
+.dots button.on { width: 28px; background: var(--accent); }
+@media (max-width: 760px) { .slide > img { object-position: 60% 0; } .dots { bottom: 14px; } }
+
+/* Hover trailer on posters */
+.poster-img { position: relative; }
+.poster-trailer { position: absolute; top: 0; left: 50%; height: 100%; width: 267%; transform: translateX(-50%); border: 0; pointer-events: none; background: #000; }
+
+/* New episode badge */
+.new-badge { position: absolute; left: 8px; top: 8px; z-index: 1; padding: 3px 9px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-size: 11px; font-weight: 800; }
+
+/* Trailer modal */
+.trailer-modal { position: relative; width: min(960px, 100%); padding-top: 36px; }
+.trailer-modal .modal-close { top: 0; right: 0; color: var(--cream); }
+.trailer-frame { aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #000; }
+.trailer-frame iframe { width: 100%; height: 100%; border: 0; }
+
+/* Cast + person */
+.cast-card { flex: none; width: 110px; display: flex; flex-direction: column; gap: 3px; scroll-snap-align: start; text-align: center; }
+.cast-photo, .person-photo { display: grid; place-items: center; aspect-ratio: 2 / 3; border-radius: 12px; overflow: hidden; background: var(--surface2); }
+.cast-photo img, .person-photo img { width: 100%; height: 100%; object-fit: cover; }
+.cast-photo b, .person-photo b { font-family: var(--display); font-size: 36px; color: var(--muted); }
+.cast-card strong { font-size: 13px; }
+.cast-card small { color: var(--muted); font-size: 12px; }
+.person-head { display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: start; }
+.person-head .overview { margin-top: 12px; }
+@media (max-width: 600px) { .person-head { grid-template-columns: 110px 1fr; gap: 14px; } }
+
+/* Skeletons */
+.sk { border-radius: 10px; background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.sk-billboard { height: min(78vh, 760px); min-height: 460px; border-radius: 0; }
+.sk-chip { flex: none; width: 90px; height: 38px; border-radius: 999px; }
+.sk-title { width: 180px; height: 22px; margin-bottom: 12px; }
+.sk-poster { flex: none; width: clamp(112px, 14vw, 180px); aspect-ratio: 2 / 3; }
+.sk-grid { aspect-ratio: 2 / 3; }
+.sk-line { height: 16px; margin-top: 12px; }
+
+/* Footer + legal */
+.footer { border-top: 1px solid var(--line); padding: 28px var(--pad) 40px; margin-top: 24px; }
+.footer-inner { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.footer nav { display: flex; flex-wrap: wrap; gap: 6px 20px; font-weight: 800; color: var(--muted); }
+.footer nav a:hover { color: var(--text); }
+.footer p { margin: 0; max-width: 640px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.legal h2 { font-size: 20px; margin: 26px 0 8px; }
+.legal p, .legal li { line-height: 1.65; }
+.legal ul { padding-left: 20px; }
+.page:has(+ .footer) { min-height: 0; }
+@media (max-width: 760px) { .footer { padding-bottom: calc(96px + env(safe-area-inset-bottom)); } }

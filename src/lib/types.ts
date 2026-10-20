@@ -28,8 +28,26 @@ export interface Episode {
   runtime: number;
 }
 
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  photo: string | null;
+}
+
+export interface Person {
+  id: number;
+  name: string;
+  bio: string;
+  photo: string | null;
+  born: string;
+  place: string;
+  knownFor: string;
+}
+
 export interface Details {
   media: Media;
+  lastAired: { season: number; episode: number; date: string } | null;
   genres: string[];
   runtime: number;
   tagline: string;

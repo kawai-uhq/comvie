@@ -1,0 +1,21 @@
+import { Link } from 'react-router-dom';
+import Logo from './Logo';
+
+export default function Footer() {
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <Logo size={26} />
+        <nav aria-label="Legal">
+          <Link to="/about">About</Link>
+          <Link to="/terms">Terms</Link>
+          <Link to="/privacy">Privacy</Link>
+          <Link to="/takedown">Takedown requests</Link>
+        </nav>
+        <p>
+          Comvie does not host any video. Movie and show information comes from TMDB; this product uses the TMDB API but is not endorsed or certified by TMDB.
+        </p>
+      </div>
+    </footer>
+  );
+}

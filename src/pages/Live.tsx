@@ -7,6 +7,7 @@ import type { Channel } from '../lib/iptv';
 import { store } from '../lib/storage';
 
 const PAGE = 48;
+const BAD_MS = 3 * 24 * 3600 * 1000;
 
 const CATS: { id: string; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -33,6 +34,9 @@ export default function Live() {
   const [shown, setShown] = useState(PAGE);
   const [favs, setFavs] = useState<string[]>(() => store.getTvFavs());
   const listTop = useRef<HTMLDivElement>(null);
+  const [bad, setBad] = useState<Record<string, number>>(() => store.getTvBad());
+  const [showBad, setShowBad] = useState(false);
+  const [lastId, setLastId] = useState(() => store.getTvLast());
   const [recent, setRecent] = useState<string[]>(() => store.getTvRecent());
 
   const load = () => {
@@ -48,10 +52,16 @@ export default function Live() {
     return [...codes].map((code) => ({ code, name: countryName(code) })).sort((a, b) => a.name.localeCompare(b.name));
   }, [all]);
 
+  // Channels that failed recently are hidden for 3 days (unless "Show offline" is on)
+  const badCount = useMemo(
+    () => (all ?? []).filter((c) => Date.now() - (bad[c.id] ?? 0) < BAD_MS).length,
+    [all, bad]
+  );
+
   const filtered = useMemo(() => {
     if (!all) return [];
     const term = q.trim().toLowerCase();
-    let list = all;
+    let list = showBad ? all : all.filter((c) => c.id === current?.id || Date.now() - (bad[c.id] ?? 0) >= BAD_MS);
     if (httpsOnly) list = list.filter((c) => c.url.startsWith('https://'));
     if (country) list = list.filter((c) => c.country === country);
     if (cat === 'fav') list = list.filter((c) => favs.includes(c.id));
@@ -68,12 +78,29 @@ export default function Live() {
       );
     }
     return list;
-  }, [all, q, country, httpsOnly, cat, favs, recent]);
+  }, [all, q, country, httpsOnly, cat, favs, recent, bad, showBad, current]);
 
-  useEffect(() => setShown(PAGE), [q, country, httpsOnly, cat]);
+  useEffect(() => setShown(PAGE), [q, country, httpsOnly, cat, showBad]);
+
+  const lastChannel = useMemo(() => (all && lastId ? all.find((c) => c.id === lastId) ?? null : null), [all, lastId]);
+
+  const markBad = (id: string) => {
+    const next = { ...bad, [id]: Date.now() };
+    setBad(next);
+    store.saveTvBad(next);
+  };
+  const clearBad = (id: string) => {
+    if (!(id in bad)) return;
+    const next = { ...bad };
+    delete next[id];
+    setBad(next);
+    store.saveTvBad(next);
+  };
 
   const play = (c: Channel) => {
     setCurrent(c);
+    setLastId(c.id);
+    store.saveTvLast(c.id);
     const next = [c.id, ...recent.filter((x) => x !== c.id)].slice(0, 30);
     setRecent(next);
     store.saveTvRecent(next);
@@ -101,6 +128,9 @@ export default function Live() {
           <span className="pill">FREE PUBLIC CHANNELS</span>
           <h1 className="title">Live TV &amp; <span className="accent">World Channels</span></h1>
           <p className="muted">Free public broadcasts from around the world, from the open iptv-org directory. Some channels are offline or blocked in your region.</p>
+          {all && !current && lastChannel && (
+            <button className="btn primary" onClick={() => play(lastChannel)}>▶ Resume {lastChannel.name}</button>
+          )}
           {all && <p className="stats"><span>{all.length.toLocaleString()} channels</span><span>{countries.length} countries</span></p>}
         </section>
 
@@ -114,6 +144,8 @@ export default function Live() {
               onPrev={playPrev}
               fav={favs.includes(current.id)}
               onToggleFav={() => toggleFav(current.id)}
+              onFail={() => markBad(current.id)}
+              onOk={() => clearBad(current.id)}
               onShowList={() => listTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
             />
           </section>
@@ -137,6 +169,12 @@ export default function Live() {
                 <input type="checkbox" checked={httpsOnly} onChange={(e) => setHttpsOnly(e.target.checked)} />
                 <span>HTTPS only</span>
               </label>
+              {badCount > 0 && (
+                <label className="radio toggle">
+                  <input type="checkbox" checked={showBad} onChange={(e) => setShowBad(e.target.checked)} />
+                  <span>Show offline ({badCount})</span>
+                </label>
+              )}
             </div>
             <div className="chips flush" role="tablist" aria-label="Categories">
               {CATS.map((c) => (

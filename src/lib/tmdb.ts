@@ -1,4 +1,4 @@
-import type { Details, Episode, Media, MediaType } from './types';
+import type { CastMember, Details, Episode, Media, MediaType, Person } from './types';
 
 export const IMG = {
   card: 'https://image.tmdb.org/t/p/w342',
@@ -6,6 +6,14 @@ export const IMG = {
   original: 'https://image.tmdb.org/t/p/original',
   still: 'https://image.tmdb.org/t/p/w300'
 };
+
+const B = 'https://image.tmdb.org/t/p/';
+/** Responsive image helpers: the browser picks the smallest file that looks sharp. */
+export const posterSrc = (p: string) => `${B}w342${p}`;
+export const posterSet = (p: string) => `${B}w185${p} 185w, ${B}w342${p} 342w, ${B}w500${p} 500w`;
+export const backdropSrc = (p: string) => `${B}w1280${p}`;
+export const backdropSet = (p: string) => `${B}w780${p} 780w, ${B}w1280${p} 1280w, ${B}original${p} 1920w`;
+export const profileSrc = (p: string) => `${B}w185${p}`;
 
 const cache = new Map<string, Promise<any>>();
 
@@ -76,8 +84,13 @@ export const tmdb = {
     const j = await get(`/${t}/${id}?language=en-US`);
     const media = parse(j, t);
     if (!media) throw new Error('Title not found.');
+    const la = j.last_episode_to_air;
     return {
       media,
+      lastAired:
+        la?.air_date && la.season_number
+          ? { season: la.season_number as number, episode: la.episode_number as number, date: la.air_date as string }
+          : null,
       genres: ((j.genres ?? []) as any[]).map((g) => g.name as string),
       runtime: j.runtime || j.episode_run_time?.[0] || 0,
       tagline: j.tagline ?? '',
@@ -88,6 +101,57 @@ export const tmdb = {
           name: (s.name as string) || `Season ${s.season_number}`,
           episodeCount: (s.episode_count as number) ?? 0
         }))
+    };
+  },
+  trailer: async (t: MediaType, id: number): Promise<string | null> => {
+    const j = await get(`/${t}/${id}/videos?language=en-US`);
+    const vids = ((j?.results ?? []) as any[]).filter((v) => v.site === 'YouTube' && /^[\w-]{6,20}$/.test(v.key));
+    const pick =
+      vids.find((v) => v.type === 'Trailer' && v.official) ??
+      vids.find((v) => v.type === 'Trailer') ??
+      vids.find((v) => v.type === 'Teaser');
+    return (pick?.key as string | undefined) ?? null;
+  },
+  credits: async (t: MediaType, id: number): Promise<{ cast: CastMember[]; directors: string[] }> => {
+    const j = await get(`/${t}/${id}/credits?language=en-US`);
+    return {
+      cast: ((j?.cast ?? []) as any[]).slice(0, 20).map((c) => ({
+        id: c.id as number,
+        name: c.name as string,
+        character: (c.character as string) || '',
+        photo: (c.profile_path as string) || null
+      })),
+      directors: ((j?.crew ?? []) as any[]).filter((c) => c.job === 'Director').map((c) => c.name as string)
+    };
+  },
+  person: async (id: number): Promise<{ person: Person; knownFor: Media[] }> => {
+    const [p, c] = await Promise.all([
+      get(`/person/${id}?language=en-US`),
+      get(`/person/${id}/combined_credits?language=en-US`)
+    ]);
+    const seen = new Set<string>();
+    const knownFor = ((c?.cast ?? []) as any[])
+      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
+      .map((o) => parse(o, 'all'))
+      .filter((m): m is Media => {
+        if (!m) return false;
+        const k = `${m.type}:${m.id}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      })
+      .slice(0, 40);
+    return {
+      person: {
+        id,
+        name: p.name ?? '',
+        bio: p.biography ?? '',
+        photo: p.profile_path || null,
+        born: p.birthday ?? '',
+        place: p.place_of_birth ?? '',
+        knownFor: p.known_for_department ?? ''
+      },
+      knownFor
     };
   },
   episodes: async (id: number, season: number): Promise<Episode[]> => {

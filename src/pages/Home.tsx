@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Billboard from '../components/Billboard';
-import { ContinueRow, PosterRow, Status } from '../components/Rows';
+import { ContinueRow, HomeSkeleton, PosterRow, Status } from '../components/Rows';
 import { tmdb } from '../lib/tmdb';
 import type { Media } from '../lib/types';
 import { useApp } from '../state';
@@ -48,7 +48,7 @@ export default function Home() {
   useEffect(load, [load]);
 
   if (error) return <main className="page pad-top"><Status kind="error" text={error} retry={load} /></main>;
-  if (!rows) return <main className="page pad-top"><Status kind="loading" /></main>;
+  if (!rows) return <HomeSkeleton />;
 
   const byType = (t: 'movie' | 'tv') => rows.trending.filter((m) => m.type === t);
   const pool =
@@ -56,11 +56,11 @@ export default function Home() {
     : filter === 'movie' ? [...byType('movie'), ...rows.popularMovies]
     : filter === 'anime' ? rows.anime
     : rows.trending;
-  const hero = pool.find((m) => m.backdrop && m.overview) ?? pool[0];
+  const heroes = pool.filter((m) => m.backdrop && m.overview).slice(0, 6);
 
   return (
     <main className="page">
-      {hero && <Billboard m={hero} />}
+      <Billboard key={filter} items={heroes} />
       <div className="chips" role="tablist" aria-label="Browse">
         {FILTERS.map((f) => (
           <button key={f.id} role="tab" aria-selected={filter === f.id} className={`chip ${filter === f.id ? 'on' : ''}`} onClick={() => setFilter(f.id)}>
@@ -98,7 +98,6 @@ export default function Home() {
         </>
       )}
       {filter === 'anime' && <PosterRow title="Popular Anime" items={rows.anime} />}
-      <p className="tmdb-note">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
     </main>
   );
 }

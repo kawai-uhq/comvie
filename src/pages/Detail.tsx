@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { PosterRow, Status } from '../components/Rows';
-import { IMG, tmdb } from '../lib/tmdb';
+import { DetailSkeleton, PosterRow, Row, Status } from '../components/Rows';
+import TrailerModal from '../components/TrailerModal';
+import { IMG, backdropSet, backdropSrc, profileSrc, tmdb } from '../lib/tmdb';
 import { mediaKey } from '../lib/types';
-import type { Details, Episode, Media, MediaType } from '../lib/types';
+import type { CastMember, Details, Episode, Media, MediaType } from '../lib/types';
 import { useApp } from '../state';
 
 export default function DetailPage() {
@@ -18,6 +19,10 @@ export default function DetailPage() {
   const [eps, setEps] = useState<Episode[]>([]);
   const [more, setMore] = useState<Media[]>([]);
   const [toast, setToast] = useState('');
+  const [trailer, setTrailer] = useState<string | null>(null);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [cast, setCast] = useState<CastMember[]>([]);
+  const [directors, setDirectors] = useState<string[]>([]);
 
   useEffect(() => {
     let live = true;
@@ -25,10 +30,23 @@ export default function DetailPage() {
     setError(null);
     setEps([]);
     setMore([]);
+    setTrailer(null);
+    setShowTrailer(false);
+    setCast([]);
+    setDirectors([]);
     const resume = history.find((w) => w.media.id === mid && w.media.type === t);
     setSeason(resume?.season ?? 1);
     tmdb.details(t, mid).then((r) => live && setD(r)).catch((e: Error) => live && setError(e.message));
     tmdb.similar(t, mid).then((r) => live && setMore(r)).catch(() => undefined);
+    tmdb.trailer(t, mid).then((k) => live && setTrailer(k)).catch(() => undefined);
+    tmdb
+      .credits(t, mid)
+      .then((c) => {
+        if (!live) return;
+        setCast(c.cast);
+        setDirectors(c.directors);
+      })
+      .catch(() => undefined);
     return () => {
       live = false;
     };
@@ -46,7 +64,7 @@ export default function DetailPage() {
   }, [t, mid, season]);
 
   if (error) return <main className="page pad-top"><Status kind="error" text={error} /></main>;
-  if (!d) return <main className="page pad-top"><Status kind="loading" /></main>;
+  if (!d) return <DetailSkeleton />;
 
   const m = d.media;
   const resume = history.find((w) => mediaKey(w.media) === mediaKey(m));
@@ -70,7 +88,7 @@ export default function DetailPage() {
   return (
     <main className="page">
       <section className="hero">
-        {m.backdrop && <img src={IMG.original + m.backdrop} alt="" />}
+        {m.backdrop && <img src={backdropSrc(m.backdrop)} srcSet={backdropSet(m.backdrop)} sizes="100vw" alt="" />}
         <div className="billboard-fade" />
         <div className="billboard-body">
           <h1>{m.title}</h1>
@@ -84,6 +102,7 @@ export default function DetailPage() {
           <div className="actions">
             <Link className="btn primary" to={playTo}>▶ {resume ? 'Resume' : 'Play'}</Link>
             <button className="btn ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ In My List' : '+ My List'}</button>
+            {trailer && <button className="btn ghost" onClick={() => setShowTrailer(true)}>▶ Trailer</button>}
             <button className="btn ghost" onClick={() => void share()}>Share</button>
           </div>
           {toast && <p className="muted small" role="status">{toast}</p>}
@@ -92,6 +111,7 @@ export default function DetailPage() {
 
       <div className="container">
         <p className="overview">{m.overview || 'No description available.'}</p>
+        {directors.length > 0 && <p className="muted small">Director: {directors.join(', ')}</p>}
         {d.genres.length > 0 && (
           <p className="genres">{d.genres.map((g) => <span key={g}>{g}</span>)}</p>
         )}
@@ -124,7 +144,21 @@ export default function DetailPage() {
           </section>
         )}
       </div>
+      {cast.length > 0 && (
+        <Row title="Cast">
+          {cast.map((c) => (
+            <Link key={c.id} to={`/person/${c.id}`} className="cast-card">
+              <span className="cast-photo">
+                {c.photo ? <img src={profileSrc(c.photo)} alt="" loading="lazy" /> : <b>{c.name.slice(0, 1)}</b>}
+              </span>
+              <strong>{c.name}</strong>
+              {c.character && <small>{c.character}</small>}
+            </Link>
+          ))}
+        </Row>
+      )}
       <PosterRow title="More Like This" items={more} />
+      {showTrailer && trailer && <TrailerModal videoKey={trailer} title={m.title} onClose={() => setShowTrailer(false)} />}
     </main>
   );
 }
