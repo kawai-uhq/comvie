@@ -1,4 +1,5 @@
 import { Grid, Status } from '../components/Rows';
+import { signInComingSoon } from '../lib/auth';
 import { useApp } from '../state';
 
 export default function MyList() {
@@ -14,7 +15,11 @@ export default function MyList() {
         )}
         {!session && (
           <p className="muted note">
-            Saved on this device only. <button className="link" onClick={openAuth}>Sign in</button> to keep it if you clear your browser or switch devices.
+            {signInComingSoon ? (
+              'Saved on this device only. Accounts are coming soon, within about 2 weeks.'
+            ) : (
+              <>Saved on this device only. <button className="link" onClick={openAuth}>Sign in</button> to keep it if you clear your browser or switch devices.</>
+            )}
           </p>
         )}
       </div>

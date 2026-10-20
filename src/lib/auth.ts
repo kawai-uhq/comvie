@@ -4,6 +4,12 @@ const BASE = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? '').r
 const KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ?? '';
 
 export const authConfigured = BASE.startsWith('http') && KEY.length > 0;
+/**
+ * Sign-in shows a "coming soon" notice until the Supabase keys are added, or whenever
+ * VITE_SIGNIN_COMING_SOON=true is set (handy to hide it while testing keys).
+ */
+export const signInComingSoon =
+  !authConfigured || (import.meta.env.VITE_SIGNIN_COMING_SOON as string | undefined) === 'true';
 export const supabaseBase = BASE;
 export const supabaseKey = KEY;
 

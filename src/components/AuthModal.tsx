@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AuthError, authConfigured, sendCode, verifyCode } from '../lib/auth';
+import { AuthError, sendCode, signInComingSoon, verifyCode } from '../lib/auth';
 import { useApp } from '../state';
 import Logo from './Logo';
 
@@ -76,10 +76,13 @@ export default function AuthModal() {
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
         <button className="modal-close" onClick={closeAuth} disabled={busy}>Not now</button>
         <Logo size={36} />
-        {!authConfigured ? (
+        {signInComingSoon ? (
           <>
-            <h2 id="auth-title">Sign-in isn't set up</h2>
-            <p className="muted">The site owner hasn't added the Supabase keys yet. Everything still works and is saved on this device.</p>
+            <h2 id="auth-title">Sign-in is coming soon</h2>
+            <p className="muted">
+              Accounts will be available within about 2 weeks. Until then, your My List and watch history are saved on this device.
+            </p>
+            <button className="btn primary wide" onClick={closeAuth}>Got it</button>
           </>
         ) : (
           <form

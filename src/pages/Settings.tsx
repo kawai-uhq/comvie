@@ -1,4 +1,4 @@
-import { authConfigured } from '../lib/auth';
+import { signInComingSoon } from '../lib/auth';
 import { providers } from '../lib/providers';
 import { store } from '../lib/storage';
 import { useState } from 'react';
@@ -37,21 +37,21 @@ export default function Settings() {
         </label>
         <p className="muted small">If a server refuses to load, switch this off or pick another server.</p>
 
-        {authConfigured && (
+        <h2 className="label">ACCOUNT</h2>
+        {signInComingSoon ? (
+          <p className="muted small">
+            Accounts are coming soon, within about 2 weeks. Until then, your My List and watch history are saved on this device only.
+          </p>
+        ) : session ? (
           <>
-            <h2 className="label">ACCOUNT</h2>
-            {session ? (
-              <>
-                <p>{session.email}</p>
-                <p className="muted small">Your My List and watch history are saved to this account. Signing out keeps what is already on this device.</p>
-                <button className="btn ghost" onClick={signOut}>Sign out</button>
-              </>
-            ) : (
-              <>
-                <p className="muted small">You're not signed in. My List and watch history stay in this browser and are lost if you clear its data. Sign in to save them to your account and restore them anywhere.</p>
-                <button className="btn primary" onClick={openAuth}>Sign in or sign up</button>
-              </>
-            )}
+            <p>{session.email}</p>
+            <p className="muted small">Your My List and watch history are saved to this account. Signing out keeps what is already on this device.</p>
+            <button className="btn ghost" onClick={signOut}>Sign out</button>
+          </>
+        ) : (
+          <>
+            <p className="muted small">You're not signed in. My List and watch history stay in this browser and are lost if you clear its data. Sign in to save them to your account and restore them anywhere.</p>
+            <button className="btn primary" onClick={openAuth}>Sign in or sign up</button>
           </>
         )}
 

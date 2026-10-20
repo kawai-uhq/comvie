@@ -30,6 +30,8 @@ supabase/schema.sql  tables for the optional account sync
 
 ## Optional accounts (Supabase)
 
+Until the two `VITE_SUPABASE_...` variables are set, the site shows "Sign-in is coming soon, within about 2 weeks". Setting them turns real sign-in on automatically. To keep the notice while testing, also set `VITE_SIGNIN_COMING_SOON=true`.
+
 1. Create a project at supabase.com.
 2. **Authentication -> Emails -> SMTP Settings:** turn on custom SMTP (the built-in email only reaches your team and is limited to 2 an hour).
 3. **Authentication -> Emails -> Templates:** in both **Confirm sign up** and **Magic link or OTP**, show the code: `<h2>Your Comvie code</h2><p>Enter this code on the site: <b>{{ .Token }}</b></p>`
