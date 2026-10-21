@@ -14,6 +14,7 @@ export const posterSet = (p: string) => `${B}w185${p} 185w, ${B}w342${p} 342w, $
 export const backdropSrc = (p: string) => `${B}w1280${p}`;
 export const backdropSet = (p: string) => `${B}w780${p} 780w, ${B}w1280${p} 1280w, ${B}original${p} 1920w`;
 export const profileSrc = (p: string) => `${B}w185${p}`;
+export const thumbSrc = (p: string) => `${B}w92${p}`;
 
 const cache = new Map<string, Promise<any>>();
 

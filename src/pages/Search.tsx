@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Grid, Status } from '../components/Rows';
+import SearchBox from '../components/SearchBox';
 import { tmdb } from '../lib/tmdb';
 import type { Media } from '../lib/types';
 
@@ -70,32 +70,21 @@ export default function Search() {
     return () => window.clearTimeout(t);
   }, [q, run]);
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    const term = q.trim();
-    if (term) {
-      run(term);
-      keepUrl(term);
-      (document.activeElement as HTMLElement | null)?.blur();
-    }
-  };
-
   return (
     <main className="page pad-top">
       <div className="container">
-        <form onSubmit={submit} role="search">
-          <input
-            className="field big"
-            type="search"
-            enterKeyHint="search"
-            autoComplete="off"
-            autoFocus
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search movies, shows, anime…"
-            aria-label="Search"
-          />
-        </form>
+        <SearchBox
+          wide
+          type="search"
+          autoFocus
+          inputClassName="field big"
+          value={q}
+          onChange={setQ}
+          onSubmit={(term) => {
+            run(term);
+            keepUrl(term);
+          }}
+        />
         {error ? (
           <Status kind="error" text={error} retry={() => run(q.trim())} />
         ) : results === null && busy ? (

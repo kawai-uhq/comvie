@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../state';
 import Logo from './Logo';
+import SearchBox from './SearchBox';
 
 const icons = {
   home: 'M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
@@ -35,12 +35,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    const t = q.trim();
-    if (t) nav(`/search?q=${encodeURIComponent(t)}`);
-  };
-
   return (
     <>
       <header className={`nav ${solid || pathname !== '/' ? 'solid' : ''}`}>
@@ -53,14 +47,16 @@ export default function Navbar() {
           <NavLink to="/live">Live TV</NavLink>
           <NavLink to="/list">My List</NavLink>
         </nav>
-        <form className="nav-search" onSubmit={submit} role="search">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search movies, shows, anime…"
-            aria-label="Search"
-          />
-        </form>
+        <SearchBox
+          className="nav-search"
+          value={q}
+          onChange={setQ}
+          onSubmit={(t) => {
+            nav(`/search?q=${encodeURIComponent(t)}`);
+            setQ('');
+          }}
+          onPick={() => setQ('')}
+        />
         <Link to="/settings" className="gear" aria-label="Settings">
           <Icon d={icons.settings} />
         </Link>
