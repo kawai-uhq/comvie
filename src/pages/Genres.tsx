@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { genresFor } from '../lib/genres';
+import { genreIcon, genresFor } from '../lib/genres';
 import type { MediaType } from '../lib/types';
 
 export default function Genres() {
   const [type, setType] = useState<MediaType>('movie');
   return (
     <main className="page pad-top">
-      <div className="container">
+      <div className="container mid">
         <div className="page-head">
           <div>
             <h1 className="title">Browse by <span className="accent">Genre</span></h1>
-            <p className="muted">Pick a genre to explore top movies or TV series for your mood.</p>
+            <p className="muted">Select a genre to explore top movies or TV series categorized for your mood.</p>
           </div>
           <div className="seg" role="tablist" aria-label="Type">
             <button role="tab" aria-selected={type === 'movie'} className={type === 'movie' ? 'on' : ''} onClick={() => setType('movie')}>Movie Genres</button>
@@ -26,7 +26,8 @@ export default function Genres() {
               className="genre-card"
               style={{ '--h': g.hue } as React.CSSProperties}
             >
-              <span className="genre-letter" aria-hidden="true">{g.name.slice(0, 1)}</span>
+              <span className="g-icon" aria-hidden="true">{genreIcon(g.id)}</span>
+              <span className="g-big" aria-hidden="true">{genreIcon(g.id)}</span>
               <strong>{g.name}</strong>
               <small>Explore {type === 'tv' ? 'Shows' : 'Movies'} →</small>
             </Link>

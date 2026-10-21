@@ -50,7 +50,7 @@ export default function Navbar() {
             <NavLink to="/tv"><Icon d={icons.tv} />TV Shows</NavLink>
             <NavLink to="/live"><Icon d={icons.live} />Live TV</NavLink>
             <NavLink to="/genres"><Icon d={icons.genres} />Genres</NavLink>
-            <NavLink to="/list"><Icon d={icons.list} />My List</NavLink>
+            <NavLink to="/list"><Icon d={icons.list} />My Library</NavLink>
           </nav>
           <SearchBox
             className="nav-search"
@@ -81,7 +81,7 @@ export default function Navbar() {
         <NavLink to="/movies"><Icon d={icons.movie} /><span>Movies</span></NavLink>
         <NavLink to="/tv"><Icon d={icons.tv} /><span>TV</span></NavLink>
         <NavLink to="/live"><Icon d={icons.live} /><span>Live</span></NavLink>
-        <NavLink to="/list"><Icon d={icons.list} /><span>My List</span></NavLink>
+        <NavLink to="/list"><Icon d={icons.list} /><span>Library</span></NavLink>
       </nav>
     </>
   );

@@ -70,6 +70,8 @@ const list = (json: any, fb: 'all' | MediaType): Media[] =>
 export const FEEDS: Record<string, { title: string; path: string; type: 'all' | MediaType }> = {
   'trending-day': { title: 'Trending Today', path: '/trending/all/day', type: 'all' },
   'trending-week': { title: 'Trending This Week', path: '/trending/all/week', type: 'all' },
+  'trending-movie': { title: 'Trending Movies', path: '/trending/movie/day', type: 'movie' },
+  'trending-tv': { title: 'Trending TV Series', path: '/trending/tv/day', type: 'tv' },
   'popular-movie': { title: 'Popular Movies', path: '/movie/popular', type: 'movie' },
   'popular-tv': { title: 'Popular TV Series', path: '/tv/popular', type: 'tv' },
   'top-movie': { title: 'Top Rated Movies', path: '/movie/top_rated', type: 'movie' },
@@ -89,14 +91,18 @@ export const FEEDS: Record<string, { title: string; path: string; type: 'all' | 
 };
 
 export const tmdb = {
+  /** Any TMDB list path, paged. */
+  list: (path: string, type: 'all' | MediaType, page = 1) => {
+    const sep = path.includes('?') ? '&' : '?';
+    return get(`${path}${sep}language=en-US&include_adult=false&page=${page}`).then((j) => ({
+      items: list(j, type),
+      pages: Math.min((j?.total_pages as number) || 1, 500)
+    }));
+  },
   feed: (key: string, page = 1) => {
     const f = FEEDS[key];
     if (!f) return Promise.resolve({ items: [] as Media[], pages: 1 });
-    const sep = f.path.includes('?') ? '&' : '?';
-    return get(`${f.path}${sep}language=en-US&include_adult=false&page=${page}`).then((j) => ({
-      items: list(j, f.type),
-      pages: Math.min((j?.total_pages as number) || 1, 500)
-    }));
+    return tmdb.list(f.path, f.type, page);
   },
   /** Title logo image (transparent PNG) for the billboard, when TMDB has one. */
   logo: async (t: MediaType, id: number): Promise<string | null> => {

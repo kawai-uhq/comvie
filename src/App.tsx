@@ -30,9 +30,9 @@ export default function App() {
       {!watching && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/movies" element={<Explore feed="popular-movie" />} />
-        <Route path="/tv" element={<Explore feed="popular-tv" />} />
-        <Route path="/explore/:feed" element={<Explore />} />
+        <Route path="/movies" element={<Explore key="m" kind="movie" />} />
+        <Route path="/tv" element={<Explore key="t" kind="tv" />} />
+        <Route path="/explore/:feed" element={<Explore key="x" />} />
         <Route path="/search" element={<Search />} />
         <Route path="/genres" element={<Genres />} />
         <Route path="/genres/:type/:id" element={<GenreResults />} />

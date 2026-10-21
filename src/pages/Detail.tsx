@@ -126,7 +126,7 @@ export default function DetailPage() {
             {directors.length > 0 && <p className="muted small">Director: {directors.join(', ')}</p>}
 
             {m.type === 'tv' && (
-              <div className="stats">
+              <div className="tstats">
                 <div><small>Seasons</small><strong>{d.seasons.length}</strong></div>
                 <div><small>Total Episodes</small><strong>{d.totalEpisodes || '—'}</strong></div>
                 <div><small>First Air Date</small><strong>{fmtDate(d.firstAir)}</strong></div>

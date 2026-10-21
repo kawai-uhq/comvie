@@ -125,13 +125,14 @@ export default function Live() {
     <main className="page pad-top">
       <div className="container">
         <section className="live-hero">
-          <span className="pill">FREE PUBLIC CHANNELS</span>
+          <span className="live-badge">FREE PUBLIC CHANNELS</span>
           <h1 className="title">Live TV &amp; <span className="accent">World Channels</span></h1>
           <p className="muted">Free public broadcasts from around the world, from around the web. Some channels are offline or blocked in your region.</p>
           {all && !current && lastChannel && (
             <button className="btn primary" onClick={() => play(lastChannel)}>▶ Resume {lastChannel.name}</button>
           )}
-          {all && <p className="stats"><span>{all.length.toLocaleString()} channels</span><span>{countries.length} countries</span></p>}
+          {all && <p className="stats"><span>📺 {all.length.toLocaleString()} Channels</span><span>🌍 {countries.length}+ Countries</span><span>🛡️ Free &amp; Public Streams</span></p>}
+          {all && <button className="btn small ghost live-refresh" onClick={load}>↻ Refresh</button>}
         </section>
 
         {current && (
