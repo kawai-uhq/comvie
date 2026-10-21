@@ -84,6 +84,20 @@ export default function Live() {
 
   const lastChannel = useMemo(() => (all && lastId ? all.find((c) => c.id === lastId) ?? null : null), [all, lastId]);
 
+  // Open the page with a channel already loaded: last watched, else NASA TV, else the first secure channel
+  useEffect(() => {
+    if (!all || current) return;
+    const ok = (c: Channel) => c.url.startsWith('https://') && Date.now() - (bad[c.id] ?? 0) >= BAD_MS;
+    const pick =
+      (lastChannel && ok(lastChannel) ? lastChannel : null) ??
+      all.find((c) => ok(c) && /nasa tv/i.test(c.name)) ??
+      all.find(ok) ??
+      null;
+    if (pick) setCurrent(pick);
+    // only when the channel list first arrives
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all]);
+
   const markBad = (id: string) => {
     const next = { ...bad, [id]: Date.now() };
     setBad(next);
@@ -137,7 +151,10 @@ export default function Live() {
 
         {current && (
           <section className="now">
-            <h2 className="section"><span className="live-dot" aria-hidden="true" /> Now streaming: <span className="accent">{current.name}</span></h2>
+            <div className="now-head">
+              <h2 className="section"><span className="live-dot" aria-hidden="true" /> Now streaming: <span className="accent">{current.name}</span></h2>
+              <span className="muted small now-keys">Press <kbd>F</kbd> for Fullscreen, <kbd>Space</kbd> to Pause</span>
+            </div>
             <LivePlayer
               key={current.id}
               channel={current}

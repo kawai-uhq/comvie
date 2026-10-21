@@ -559,3 +559,6 @@ h1, h2, h3 { font-family: var(--display); margin: 0; }
   .head-tools { width: 100%; }
   .head-tools .select { flex: 1; }
 }
+.now-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.now-keys kbd { padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface); font: inherit; font-size: 11px; }
+@media (max-width: 760px) { .now-keys { display: none; } }
