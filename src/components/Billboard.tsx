@@ -56,7 +56,7 @@ export default function Billboard({ items }: { items: Media[] }) {
               <span className="kicker">{m.type === 'tv' ? 'SERIES' : 'FILM'}</span>
               <h1>{m.title}</h1>
               <p className="billboard-meta">
-                <span className="match">{Math.round(m.rating * 10)}% match</span>
+                {m.rating > 0 && <span className="match">★ {m.rating.toFixed(1)}</span>}
                 {m.year && <span>{m.year}</span>}
               </p>
               <p className="billboard-overview">{m.overview}</p>

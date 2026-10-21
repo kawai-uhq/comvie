@@ -80,7 +80,7 @@ h1, h2, h3 { font-family: var(--display); margin: 0; }
 .billboard h1, .hero h1 { font-size: clamp(34px, 6vw, 64px); line-height: 1.05; text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5); }
 .kicker { font-family: var(--display); font-weight: 600; letter-spacing: 0.22em; font-size: 12px; color: var(--accent); }
 .billboard-meta { display: flex; flex-wrap: wrap; gap: 14px; margin: 0; color: var(--cream); font-weight: 800; font-size: 14px; }
-.match { color: #8fe3a8; }
+.match { color: #ffd36b; font-weight: 900; }
 .billboard-overview { margin: 0; color: var(--text); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .tagline { margin: 0; color: var(--cream); font-style: italic; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
@@ -416,3 +416,18 @@ h1, h2, h3 { font-family: var(--display); margin: 0; }
 .wp-servers .pill small { opacity: .75; margin-left: 4px; font-weight: 700; }
 .wp-info h1 { font-size: clamp(22px, 4vw, 32px); margin: 10px 0; }
 .wp-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+/* ---- Episode list rows ---- */
+.ep-sub { color: var(--muted); margin: -8px 0 0; font-size: 14px; }
+.ep-list { display: grid; gap: 14px; margin-top: 16px; }
+.ep-row { position: relative; display: grid; grid-template-columns: 224px 1fr; gap: 18px; padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.ep-row:hover { background: var(--surface2); }
+.ep-row .ep-img { aspect-ratio: 16 / 9; border-radius: 10px; position: relative; }
+.ep-row .ep-img img { width: 100%; height: 100%; object-fit: cover; }
+.ep-row h4 { margin: 0 70px 6px 0; font-size: 17px; }
+.ep-row .ep-meta { display: flex; gap: 14px; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.ep-row p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.ep-score { position: absolute; top: 14px; right: 14px; padding: 3px 10px; border-radius: 8px; background: rgba(255,211,107,.16); color: #ffd36b; font-weight: 900; font-size: 13px; }
+@media (max-width: 760px) {
+  .ep-row { grid-template-columns: 1fr; }
+}

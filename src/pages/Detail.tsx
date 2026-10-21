@@ -153,21 +153,22 @@ export default function DetailPage() {
               ))}
             </select>
           </div>
-          <div className="ep-cards">
+          <p className="ep-sub">Select a season to view detailed episode list</p>
+          <div className="ep-list">
             {eps.map((e) => (
-              <Link key={e.number} className="ep-card" to={`/watch/tv/${m.id}?s=${season}&e=${e.number}`}>
+              <Link key={e.number} className="ep-row" to={`/watch/tv/${m.id}?s=${season}&e=${e.number}`}>
                 <span className="ep-img">
                   {e.still ? <img src={IMG.still + e.still} alt="" loading="lazy" /> : null}
                   <span className="ep-tag">E{e.number}</span>
                 </span>
-                <span className="ep-body">
-                  <strong>{e.number}. {e.name}</strong>
-                  <small>
-                    {[e.airDate && fmtDate(e.airDate), e.runtime > 0 && `${e.runtime} min`, e.rating > 0 && `★ ${e.rating.toFixed(1)}`]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </small>
-                  {e.overview && <p>{e.overview}</p>}
+                <span>
+                  {e.rating > 0 && <span className="ep-score">★ {e.rating.toFixed(1)}</span>}
+                  <h4>{e.number}. {e.name}</h4>
+                  <span className="ep-meta">
+                    {e.airDate && <span>📅 {e.airDate}</span>}
+                    {e.runtime > 0 && <span>⏱ {e.runtime} min</span>}
+                  </span>
+                  <p>{e.overview || 'No description available.'}</p>
                 </span>
               </Link>
             ))}
