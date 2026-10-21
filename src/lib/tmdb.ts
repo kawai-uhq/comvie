@@ -100,6 +100,15 @@ export const tmdb = {
       genres: ((j.genres ?? []) as any[]).map((g) => g.name as string),
       runtime: j.runtime || j.episode_run_time?.[0] || 0,
       tagline: j.tagline ?? '',
+      status: (j.status as string) ?? '',
+      votes: (j.vote_count as number) ?? 0,
+      firstAir: ((j.first_air_date ?? j.release_date) as string) ?? '',
+      lastAir: ((j.last_air_date ?? '') as string),
+      totalEpisodes: (j.number_of_episodes as number) ?? 0,
+      studios: [...((j.networks ?? []) as any[]), ...((j.production_companies ?? []) as any[])]
+        .map((c) => c.name as string)
+        .filter((n, i, a) => n && a.indexOf(n) === i)
+        .slice(0, 8),
       seasons: ((j.seasons ?? []) as any[])
         .filter((s) => s.season_number > 0)
         .map((s) => ({
@@ -168,7 +177,8 @@ export const tmdb = {
       overview: e.overview ?? '',
       still: e.still_path || null,
       rating: e.vote_average ?? 0,
-      runtime: e.runtime ?? 0
+      runtime: e.runtime ?? 0,
+      airDate: (e.air_date as string) ?? ''
     }));
   }
 };

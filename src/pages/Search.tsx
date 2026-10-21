@@ -1,9 +1,26 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Grid, Status } from '../components/Rows';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Status } from '../components/Rows';
 import SearchBox from '../components/SearchBox';
-import { tmdb } from '../lib/tmdb';
+import { posterSet, posterSrc, tmdb } from '../lib/tmdb';
+import { mediaKey } from '../lib/types';
 import type { Media } from '../lib/types';
+
+type Filter = 'all' | 'movie' | 'tv';
+
+function Card({ m }: { m: Media }) {
+  return (
+    <Link to={`/title/${m.type}/${m.id}`} className="rcard">
+      <span className="rimg">
+        {m.poster ? <img src={posterSrc(m.poster)} srcSet={posterSet(m.poster)} sizes="180px" alt="" loading="lazy" /> : null}
+        <span className="rbadge">{m.type === 'tv' ? 'TV SERIES' : 'MOVIE'}</span>
+        {m.rating > 0 && <span className="rrate">★ {m.rating.toFixed(1)}</span>}
+      </span>
+      <strong>{m.title}</strong>
+      <small>{m.year}</small>
+    </Link>
+  );
+}
 
 export default function Search() {
   const [sp] = useSearchParams();
@@ -13,9 +30,9 @@ export default function Search() {
   const [top, setTop] = useState<Media[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const ticket = useRef(0); // only the newest request may update the page
+  const [filter, setFilter] = useState<Filter>('all');
+  const ticket = useRef(0);
 
-  // A search sent from the top bar changes the address; follow it
   useEffect(() => {
     setQ(urlQ);
   }, [urlQ]);
@@ -43,7 +60,6 @@ export default function Search() {
   }, []);
 
   const keepUrl = (term: string) => {
-    // keeps the link shareable without re-rendering the page
     try {
       const path = window.location.pathname;
       window.history.replaceState(window.history.state, '', term ? `${path}?q=${encodeURIComponent(term)}` : path);
@@ -52,7 +68,6 @@ export default function Search() {
     }
   };
 
-  // Search shortly after typing stops
   useEffect(() => {
     const term = q.trim();
     if (!term) {
@@ -70,21 +85,51 @@ export default function Search() {
     return () => window.clearTimeout(t);
   }, [q, run]);
 
+  const counts = useMemo(
+    () => ({
+      all: results?.length ?? 0,
+      movie: results?.filter((m) => m.type === 'movie').length ?? 0,
+      tv: results?.filter((m) => m.type === 'tv').length ?? 0
+    }),
+    [results]
+  );
+  const shown = (results ?? []).filter((m) => filter === 'all' || m.type === filter);
+
   return (
     <main className="page pad-top">
       <div className="container">
-        <SearchBox
-          wide
-          type="search"
-          autoFocus
-          inputClassName="field big"
-          value={q}
-          onChange={setQ}
-          onSubmit={(term) => {
-            run(term);
-            keepUrl(term);
-          }}
-        />
+        <div className="s-hero">
+          <h1>Search Comvie</h1>
+          <p>Find your next favourite movie or series</p>
+          <div className="s-bar">
+            <SearchBox
+              wide
+              type="search"
+              autoFocus
+              inputClassName="field big"
+              value={q}
+              onChange={setQ}
+              onSubmit={(term) => {
+                run(term);
+                keepUrl(term);
+              }}
+            />
+            <button
+              type="button"
+              className="s-btn"
+              onClick={() => {
+                const t = q.trim();
+                if (t) {
+                  run(t);
+                  keepUrl(t);
+                }
+              }}
+            >
+              SEARCH
+            </button>
+          </div>
+        </div>
+
         {error ? (
           <Status kind="error" text={error} retry={() => run(q.trim())} />
         ) : results === null && busy ? (
@@ -92,14 +137,20 @@ export default function Search() {
         ) : results === null ? (
           <>
             <h2 className="section">Top Searches</h2>
-            <Grid items={top} />
+            <div className="rgrid">{top.map((m) => <Card key={mediaKey(m)} m={m} />)}</div>
           </>
-        ) : results.length === 0 ? (
-          <Status kind="empty" text={`Nothing found for "${q.trim()}".`} />
         ) : (
           <>
-            <h2 className="section">Results</h2>
-            <Grid items={results} />
+            <div className="pills" role="tablist" aria-label="Filter results">
+              <button className={`pill ${filter === 'all' ? 'on' : ''}`} onClick={() => setFilter('all')}>All Results ({counts.all})</button>
+              <button className={`pill ${filter === 'movie' ? 'on' : ''}`} onClick={() => setFilter('movie')}>Movies ({counts.movie})</button>
+              <button className={`pill ${filter === 'tv' ? 'on' : ''}`} onClick={() => setFilter('tv')}>TV Series ({counts.tv})</button>
+            </div>
+            {shown.length === 0 ? (
+              <Status kind="empty" text={`Nothing found for "${q.trim()}".`} />
+            ) : (
+              <div className="rgrid">{shown.map((m) => <Card key={mediaKey(m)} m={m} />)}</div>
+            )}
           </>
         )}
       </div>

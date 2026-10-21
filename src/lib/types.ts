@@ -26,6 +26,7 @@ export interface Episode {
   still: string | null;
   rating: number;
   runtime: number;
+  airDate: string;
 }
 
 export interface CastMember {
@@ -52,6 +53,12 @@ export interface Details {
   runtime: number;
   tagline: string;
   seasons: Season[];
+  status: string;
+  votes: number;
+  firstAir: string;
+  lastAir: string;
+  totalEpisodes: number;
+  studios: string[];
 }
 
 export interface WatchEntry {

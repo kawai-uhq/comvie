@@ -12,7 +12,7 @@ export default function Watch() {
   const mid = Number(id);
   const [sp, setSp] = useSearchParams();
   const nav = useNavigate();
-  const { provider: defaultProvider, recordWatch } = useApp();
+  const { provider: defaultProvider, recordWatch, isFavorite, toggleFavorite } = useApp();
 
   const season = Math.max(1, Number(sp.get('s')) || 1);
   const episode = Math.max(1, Number(sp.get('e')) || 1);
@@ -70,51 +70,71 @@ export default function Watch() {
 
   const sandbox = protect ? 'allow-scripts allow-same-origin allow-forms allow-presentation' : undefined;
 
+  const m = d?.media;
+  const fav = m ? isFavorite(m) : false;
+  const epName = eps.find((x) => x.number === episode)?.name;
+
   return (
-    <div className="watch">
-      <div className="watch-bar">
+    <div className="wp">
+      <div className="wp-top">
         <button className="btn small ghost" onClick={() => (window.history.length > 1 ? nav(-1) : nav(`/title/${t}/${mid}`))}>← Back</button>
-        <div className="watch-title">
-          <strong>{d?.media.title ?? 'Loading…'}</strong>
-          {t === 'tv' && <small>S{season} · E{episode}</small>}
-        </div>
-        <div className="watch-tools">
-          {t === 'tv' && episode > 1 && <button className="btn small ghost" onClick={() => go(season, episode - 1)}>‹ Prev</button>}
-          {next && <button className="btn small ghost" onClick={() => go(next.s, next.e)}>Next ›</button>}
-          <select className="field select small" value={pid} onChange={(e) => setServer(e.target.value)} aria-label="Server">
-            {providers.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-          <button className="btn small ghost" onClick={() => setReload((n) => n + 1)}>Reload</button>
-        </div>
+        <span className="sp" />
+        {m && (
+          <>
+            <button className="btn small ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ In My List' : '+ Watchlist'}</button>
+            <button className="btn small ghost" aria-label="Favorite" aria-pressed={fav} onClick={() => toggleFavorite(m)}>{fav ? '♥' : '♡'}</button>
+          </>
+        )}
       </div>
 
       <iframe
         key={`${url}|${reload}|${protect}`}
-        className="player"
+        className="wp-frame"
         src={url}
-        title={d?.media.title ?? 'Player'}
+        title={m?.title ?? 'Player'}
         allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
         allowFullScreen
         referrerPolicy="origin"
         sandbox={sandbox}
       />
 
-      <div className="watch-help">
-        Video not loading? Try another server above
-        {' or '}
-        <button
-          className="link"
-          onClick={() => {
-            const v = !protect;
-            setProtect(v);
-            store.saveProtect(v);
-          }}
-        >
-          turn popup protection {protect ? 'off' : 'on'}
-        </button>
-        . <Link to={`/title/${t}/${mid}`} className="link">Details</Link>
+      <div className="wp-servers">
+        <b>STREAMING SERVER:</b>
+        {providers.map((p) => (
+          <button key={p.id} className={`pill ${p.id === pid ? 'on' : ''}`} onClick={() => setServer(p.id)}>
+            {p.name} <small>({p.quality})</small>
+          </button>
+        ))}
+        <button className="pill" onClick={() => setReload((n) => n + 1)}>↻ Reload</button>
+      </div>
+
+      <div className="wp-info">
+        {t === 'tv' && <span className="chip stat">Season {season} • Episode {episode}</span>}
+        <h1>{m?.title ?? 'Loading…'}{epName ? ` — ${epName}` : ''}</h1>
+        <div className="td-chips">
+          {m && m.rating > 0 && <span className="chip star">★ {m.rating.toFixed(1)}</span>}
+          {m?.year && <span className="chip">{m.year}</span>}
+          {d?.status && <span className="chip">{d.status}</span>}
+        </div>
+        <div className="wp-tools">
+          {t === 'tv' && episode > 1 && <button className="btn small ghost" onClick={() => go(season, episode - 1)}>‹ Prev</button>}
+          {next && <button className="btn small ghost" onClick={() => go(next.s, next.e)}>Next ›</button>}
+          <Link to={`/title/${t}/${mid}`} className="btn small ghost">Details</Link>
+        </div>
+        <p className="watch-help" style={{ background: 'none', padding: '14px 0', textAlign: 'left' }}>
+          Video not loading? Try another server above or{' '}
+          <button
+            className="link"
+            onClick={() => {
+              const v = !protect;
+              setProtect(v);
+              store.saveProtect(v);
+            }}
+          >
+            turn popup protection {protect ? 'off' : 'on'}
+          </button>
+          .
+        </p>
       </div>
     </div>
   );
