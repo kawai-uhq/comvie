@@ -5,7 +5,7 @@ import { IMG, posterSet, posterSrc, tmdb } from '../lib/tmdb';
 import { mediaKey, progressLabel } from '../lib/types';
 import type { Details, Media, WatchEntry } from '../lib/types';
 
-export function Row({ title, children }: { title: string; children: ReactNode }) {
+export function Row({ title, children, to }: { title: string; children: ReactNode; to?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = (dir: number) => {
     const el = ref.current;
@@ -13,15 +13,21 @@ export function Row({ title, children }: { title: string; children: ReactNode })
   };
   return (
     <section className="row">
-      <h2>{title}</h2>
-      <div className="row-wrap">
-        <button className="arrow left" aria-label="Scroll left" onClick={() => scroll(-1)}>‹</button>
-        <div className="row-scroll" ref={ref}>{children}</div>
-        <button className="arrow right" aria-label="Scroll right" onClick={() => scroll(1)}>›</button>
+      <div className="row-head">
+        <h2><span className="bar" aria-hidden="true" />{title}</h2>
+        <div className="row-ctrl">
+          {to && <Link to={to} className="explore">Explore All →</Link>}
+          <button className="rbtn" aria-label="Scroll left" onClick={() => scroll(-1)}>‹</button>
+          <button className="rbtn" aria-label="Scroll right" onClick={() => scroll(1)}>›</button>
+        </div>
       </div>
+      <div className="row-scroll" ref={ref}>{children}</div>
     </section>
   );
 }
+
+/** Rating chip colour: green for 7+, amber for 5+, red below. */
+export const rateTone = (r: number) => (r >= 7 ? 'good' : r >= 5 ? 'mid' : 'low');
 
 const canHover = () =>
   typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -82,16 +88,20 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
             aria-hidden="true"
           />
         )}
+        <span className={`pbadge ${m.type}`}>{m.type === 'tv' ? 'TV SERIES' : 'MOVIE'}</span>
+        <span className={`prate ${rateTone(m.rating)}`}>★ {m.rating.toFixed(1)}</span>
       </span>
+      <span className="ptitle">{m.title}</span>
+      {m.year && <span className="pyear">📅 {m.year}</span>}
     </Link>
   );
 }
 
-export function PosterRow({ title, items, top10 }: { title: string; items: Media[]; top10?: boolean }) {
+export function PosterRow({ title, items, top10, to }: { title: string; items: Media[]; top10?: boolean; to?: string }) {
   if (!items.length) return null;
   const shown = top10 ? items.slice(0, 10) : items;
   return (
-    <Row title={title}>
+    <Row title={title} to={to}>
       {shown.map((m, i) => (
         <Poster key={mediaKey(m)} m={m} rank={top10 ? i + 1 : undefined} />
       ))}
@@ -177,9 +187,6 @@ export function HomeSkeleton() {
   return (
     <main className="page" aria-busy="true" aria-label="Loading">
       <div className="sk sk-billboard" />
-      <div className="chips">
-        {[0, 1, 2, 3].map((i) => <div key={i} className="sk sk-chip" />)}
-      </div>
       {[0, 1, 2].map((r) => (
         <section className="row" key={r}>
           <div className="sk sk-title" style={{ marginLeft: 'var(--pad)' }} />

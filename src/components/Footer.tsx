@@ -16,6 +16,7 @@ export default function Footer() {
           Comvie does not host any video. Movie and show information comes from TMDB; this product uses the TMDB API but is not endorsed or certified by TMDB.
         </p>
       </div>
+      <div className="footer-mark" aria-hidden="true">COMVIE</div>
     </footer>
   );
 }

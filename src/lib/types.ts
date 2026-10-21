@@ -9,6 +9,7 @@ export interface Media {
   type: MediaType;
   rating: number;
   year: string;
+  votes?: number;
 }
 
 export const mediaKey = (m: Media) => `${m.type}:${m.id}`;

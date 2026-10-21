@@ -5,6 +5,8 @@ import Navbar from './components/Navbar';
 import Detail from './pages/Detail';
 import GenreResults from './pages/GenreResults';
 import Genres from './pages/Genres';
+import Explore from './pages/Explore';
+import Floating from './components/Floating';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import { About, Privacy, Takedown, Terms } from './pages/Legal';
@@ -28,6 +30,9 @@ export default function App() {
       {!watching && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/movies" element={<Explore feed="popular-movie" />} />
+        <Route path="/tv" element={<Explore feed="popular-tv" />} />
+        <Route path="/explore/:feed" element={<Explore />} />
         <Route path="/search" element={<Search />} />
         <Route path="/genres" element={<Genres />} />
         <Route path="/genres/:type/:id" element={<GenreResults />} />
@@ -44,6 +49,7 @@ export default function App() {
         <Route path="*" element={<Home />} />
       </Routes>
       {!watching && <Footer />}
+      {!watching && <Floating />}
       <AuthModal />
     </>
   );

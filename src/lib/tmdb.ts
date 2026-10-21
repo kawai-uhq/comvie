@@ -4,7 +4,8 @@ export const IMG = {
   card: 'https://image.tmdb.org/t/p/w342',
   large: 'https://image.tmdb.org/t/p/w780',
   original: 'https://image.tmdb.org/t/p/original',
-  still: 'https://image.tmdb.org/t/p/w300'
+  still: 'https://image.tmdb.org/t/p/w300',
+  logo: 'https://image.tmdb.org/t/p/w500'
 };
 
 const B = 'https://image.tmdb.org/t/p/';
@@ -57,14 +58,53 @@ function parse(o: any, fallback: 'all' | MediaType): Media | null {
     overview: o.overview ?? '',
     type,
     rating: o.vote_average ?? 0,
-    year: date.slice(0, 4)
+    year: date.slice(0, 4),
+    votes: (o.vote_count as number) ?? 0
   };
 }
 
 const list = (json: any, fb: 'all' | MediaType): Media[] =>
   ((json?.results ?? []) as any[]).map((o) => parse(o, fb)).filter((m): m is Media => m !== null);
 
+/** Home-page and Explore feeds: a TMDB list plus how its items are typed. */
+export const FEEDS: Record<string, { title: string; path: string; type: 'all' | MediaType }> = {
+  'trending-day': { title: 'Trending Today', path: '/trending/all/day', type: 'all' },
+  'trending-week': { title: 'Trending This Week', path: '/trending/all/week', type: 'all' },
+  'popular-movie': { title: 'Popular Movies', path: '/movie/popular', type: 'movie' },
+  'popular-tv': { title: 'Popular TV Series', path: '/tv/popular', type: 'tv' },
+  'top-movie': { title: 'Top Rated Movies', path: '/movie/top_rated', type: 'movie' },
+  'top-tv': { title: 'Top Rated TV Series', path: '/tv/top_rated', type: 'tv' },
+  upcoming: { title: 'Upcoming Movies', path: '/movie/upcoming', type: 'movie' },
+  'now-playing': { title: 'Now Playing in Theaters', path: '/movie/now_playing', type: 'movie' },
+  'on-air': { title: 'Currently Airing TV Shows', path: '/tv/on_the_air', type: 'tv' },
+  'airing-today': { title: 'Airing Today', path: '/tv/airing_today', type: 'tv' },
+  action: { title: 'Action & Explosive Hits', path: '/discover/movie?with_genres=28&sort_by=popularity.desc', type: 'movie' },
+  scifi: { title: 'Sci-Fi & Futuristic Worlds', path: '/discover/movie?with_genres=878&sort_by=popularity.desc', type: 'movie' },
+  animated: { title: 'Animated Masterpieces', path: '/discover/tv?with_genres=16&sort_by=popularity.desc', type: 'tv' },
+  drama: {
+    title: 'Critically Acclaimed Dramas',
+    path: '/discover/movie?with_genres=18&sort_by=vote_average.desc&vote_count.gte=800',
+    type: 'movie'
+  }
+};
+
 export const tmdb = {
+  feed: (key: string, page = 1) => {
+    const f = FEEDS[key];
+    if (!f) return Promise.resolve({ items: [] as Media[], pages: 1 });
+    const sep = f.path.includes('?') ? '&' : '?';
+    return get(`${f.path}${sep}language=en-US&include_adult=false&page=${page}`).then((j) => ({
+      items: list(j, f.type),
+      pages: Math.min((j?.total_pages as number) || 1, 500)
+    }));
+  },
+  /** Title logo image (transparent PNG) for the billboard, when TMDB has one. */
+  logo: async (t: MediaType, id: number): Promise<string | null> => {
+    const j = await get(`/${t}/${id}/images?include_image_language=en,null`);
+    const l = ((j?.logos ?? []) as any[]).filter((x) => x.file_path && !String(x.file_path).endsWith('.svg'));
+    const pick = l.find((x) => x.iso_639_1 === 'en') ?? l[0];
+    return (pick?.file_path as string | undefined) ?? null;
+  },
   trending: () => get('/trending/all/day?language=en-US').then((j) => list(j, 'all')),
   popular: (t: MediaType) => get(`/${t}/popular?language=en-US&page=1`).then((j) => list(j, t)),
   topRated: (t: MediaType) => get(`/${t}/top_rated?language=en-US&page=1`).then((j) => list(j, t)),
