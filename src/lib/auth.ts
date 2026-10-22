@@ -66,6 +66,11 @@ function errorText(reply: Reply, fallback: string): string {
     return "Supabase's built-in email only sends to your own team. Set up custom SMTP in Supabase.";
   if (lower.includes('error sending'))
     return "The email couldn't be sent. Check the SMTP settings in Supabase.";
+  if (lower.includes('invalid login')) return 'Wrong email or password.';
+  if (lower.includes('already registered') || lower.includes('already been registered'))
+    return 'An account with this email already exists. Sign in instead.';
+  if (lower.includes('at least') && lower.includes('password')) return 'Password must be at least 6 characters.';
+  if (lower.includes('not confirmed')) return 'Confirm your email first (check your inbox), or sign in with an email code.';
   if (lower.includes('expired') || lower.includes('token') || lower.includes('otp'))
     return 'That code is wrong or has expired.';
   return raw || fallback;
@@ -82,6 +87,22 @@ export async function verifyCode(email: string, code: string): Promise<Session> 
   const s = toSession(r.body, email);
   if (!s) throw new AuthError('Sign-in failed. Please try again.');
   return s;
+}
+
+/** Email + password sign-in. */
+export async function signInPassword(email: string, password: string): Promise<Session> {
+  const r = await post('/token?grant_type=password', { email, password });
+  if (r.code < 200 || r.code > 299) throw new AuthError(errorText(r, "Couldn't sign in. Try again."));
+  const s = toSession(r.body, email);
+  if (!s) throw new AuthError('Sign-in failed. Please try again.');
+  return s;
+}
+
+/** Create an account. Returns a session, or null when Supabase wants the email confirmed first. */
+export async function signUpPassword(email: string, password: string, username: string): Promise<Session | null> {
+  const r = await post('/signup', { email, password, data: username ? { username } : {} });
+  if (r.code < 200 || r.code > 299) throw new AuthError(errorText(r, "Couldn't create the account. Try again."));
+  return toSession(r.body, email);
 }
 
 export type RefreshResult =

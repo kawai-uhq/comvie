@@ -35,10 +35,35 @@ const canHover = () =>
 /** Poster card. On devices with a mouse, hovering for a moment plays the trailer on the picture. */
 export function Poster({ m, rank }: { m: Media; rank?: number }) {
   const [trailer, setTrailer] = useState<string | null>(null);
+  const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
   const timer = useRef<number | undefined>(undefined);
   const hovering = useRef(false);
+  const imgRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  // A fixed preview would drift if the page or a row scrolls: close it instead
+  useEffect(() => {
+    if (!trailer) return;
+    const close = () => {
+      hovering.current = false;
+      setTrailer(null);
+      setBox(null);
+    };
+    window.addEventListener('scroll', close, true);
+    return () => window.removeEventListener('scroll', close, true);
+  }, [trailer]);
+
+  /** Landscape preview centred over the poster, kept inside the window. */
+  const place = () => {
+    const r = imgRef.current?.getBoundingClientRect();
+    if (!r) return null;
+    const height = Math.round(r.height * 1.08);
+    const width = Math.round((height * 16) / 9);
+    const left = Math.min(Math.max(r.left + r.width / 2 - width / 2, 8), Math.max(8, window.innerWidth - width - 8));
+    const top = Math.min(Math.max(r.top + r.height / 2 - height / 2, 80), Math.max(80, window.innerHeight - height - 8));
+    return { left, top, width, height };
+  };
 
   const enter = () => {
     if (!canHover()) return;
@@ -47,7 +72,11 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
     timer.current = window.setTimeout(() => {
       tmdb
         .trailer(m.type, m.id)
-        .then((k) => hovering.current && setTrailer(k))
+        .then((k) => {
+          if (!hovering.current || !k) return;
+          setBox(place());
+          setTrailer(k);
+        })
         .catch(() => undefined);
     }, 700);
   };
@@ -55,18 +84,18 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
     hovering.current = false;
     window.clearTimeout(timer.current);
     setTrailer(null);
+    setBox(null);
   };
 
   return (
     <Link
       to={`/title/${m.type}/${m.id}`}
       className={`poster ${rank ? 'ranked' : ''}`}
-      title={m.title}
       onMouseEnter={enter}
       onMouseLeave={leave}
     >
       {rank ? <span className="rank" aria-hidden="true">{rank}</span> : null}
-      <span className="poster-img">
+      <span className="poster-img" ref={imgRef}>
         {m.poster ? (
           <img
             src={posterSrc(m.poster)}
@@ -78,19 +107,20 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
         ) : (
           <span className="poster-missing">{m.title}</span>
         )}
-        {trailer && (
-          <iframe
-            className="poster-trailer"
-            src={`https://www.youtube-nocookie.com/embed/${trailer}?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3&loop=1&playlist=${trailer}`}
-            allow="autoplay; encrypted-media"
-            tabIndex={-1}
-            title=""
-            aria-hidden="true"
-          />
-        )}
         <span className={`pbadge ${m.type}`}>{m.type === 'tv' ? 'TV SERIES' : 'MOVIE'}</span>
         <span className={`prate ${rateTone(m.rating)}`}>★ {m.rating.toFixed(1)}</span>
       </span>
+      {trailer && box && (
+        <span className="hover-preview" style={box} aria-hidden="true">
+          <iframe
+            className="hp-frame"
+            src={`https://www.youtube-nocookie.com/embed/${trailer}?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&playsinline=1&rel=0&iv_load_policy=3&fs=0&cc_load_policy=0&loop=1&playlist=${trailer}`}
+            allow="autoplay; encrypted-media"
+            tabIndex={-1}
+            title=""
+          />
+        </span>
+      )}
       <span className="ptitle">{m.title}</span>
       {m.year && <span className="pyear">📅 {m.year}</span>}
     </Link>

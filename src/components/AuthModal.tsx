@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
-import { AuthError, sendCode, signInComingSoon, verifyCode } from '../lib/auth';
+import { AuthError, sendCode, signInComingSoon, signInPassword, signUpPassword, verifyCode } from '../lib/auth';
 import { useApp } from '../state';
-import Logo from './Logo';
 
 const RESEND_SECONDS = 60;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function AuthModal() {
   const { authOpen, closeAuth, onSignedIn } = useApp();
-  const [step, setStep] = useState<'email' | 'code'>('email');
+  const [mode, setMode] = useState<'in' | 'up'>('in');
+  const [step, setStep] = useState<'form' | 'code'>('form');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +33,42 @@ export default function AuthModal() {
 
   if (!authOpen) return null;
 
-  const send = async () => {
+  const done = (s: Parameters<typeof onSignedIn>[0]) => {
+    setStep('form');
+    setPassword('');
+    setCode('');
+    setInfo(null);
+    onSignedIn(s);
+  };
+
+  const submitForm = async () => {
     const clean = email.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
-      setError('Enter a valid email address.');
-      return;
+    if (!EMAIL_RE.test(clean)) return setError('Enter a valid email address.');
+    if (password.length < 6) return setError('Password must be at least 6 characters.');
+    setBusy(true);
+    setError(null);
+    setInfo(null);
+    try {
+      if (mode === 'in') {
+        done(await signInPassword(clean, password));
+      } else {
+        const s = await signUpPassword(clean, password, username.trim());
+        if (s) done(s);
+        else {
+          setMode('in');
+          setInfo(`Almost there. We emailed a confirmation link to ${clean}. Open it, then sign in.`);
+        }
+      }
+    } catch (e) {
+      setError(e instanceof AuthError ? e.message : 'Something went wrong. Try again.');
     }
+    setBusy(false);
+  };
+
+  // Alternative: a one-time code instead of a password
+  const sendOtp = async () => {
+    const clean = email.trim().toLowerCase();
+    if (!EMAIL_RE.test(clean)) return setError('Enter your email above first.');
     setBusy(true);
     setError(null);
     setInfo(null);
@@ -53,34 +86,29 @@ export default function AuthModal() {
   };
 
   const verify = async () => {
-    if (code.length < 6) {
-      setError('Enter the code from your email.');
-      return;
-    }
+    if (code.length < 6) return setError('Enter the code from your email.');
     setBusy(true);
     setError(null);
     try {
-      const s = await verifyCode(email, code);
-      setStep('email');
-      setCode('');
-      setInfo(null);
-      onSignedIn(s);
+      done(await verifyCode(email, code));
     } catch (e) {
       setError(e instanceof AuthError ? e.message : 'That code is wrong or has expired.');
     }
     setBusy(false);
   };
 
+  const icon = step === 'code' || mode === 'in' ? '⇥' : '＋';
+
   return (
-    <div className="modal-back" onMouseDown={(e) => e.target === e.currentTarget && !busy && closeAuth()}>
-      <div className="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-        <button className="modal-close" onClick={closeAuth} disabled={busy}>Not now</button>
-        <Logo size={36} />
+    <div className="modal-back blur" onMouseDown={(e) => e.target === e.currentTarget && !busy && closeAuth()}>
+      <div className="modal auth" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+        <button className="modal-x" aria-label="Close" onClick={closeAuth} disabled={busy}>✕</button>
+        <div className="auth-icon" aria-hidden="true">{icon}</div>
         {signInComingSoon ? (
           <>
             <h2 id="auth-title">Sign-in is coming soon</h2>
             <p className="muted">
-              Accounts will be available within about 2 weeks. Until then, your My List and watch history are saved on this device.
+              Accounts will be available within about 2 weeks. Until then, your Watchlist and watch history are saved on this device.
             </p>
             <button className="btn primary wide" onClick={closeAuth}>Got it</button>
           </>
@@ -88,65 +116,110 @@ export default function AuthModal() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              void (step === 'email' ? send() : verify());
+              void (step === 'form' ? submitForm() : verify());
             }}
           >
-            <h2 id="auth-title">{step === 'email' ? 'Sign in or sign up' : 'Enter your code'}</h2>
-            <p className="muted">
-              {step === 'email'
-                ? 'Optional. Sign in to save My List and watch history to your account and pick up on any device. We email a one-time code; new emails get an account automatically.'
-                : `Type the code we sent to ${email}.`}
+            <h2 id="auth-title">{step === 'code' ? 'Enter your code' : mode === 'in' ? 'Welcome Back' : 'Create Account'}</h2>
+            <p className="muted small">
+              {step === 'code'
+                ? `Type the code we sent to ${email}.`
+                : mode === 'in'
+                  ? 'Sign in to sync your watchlist & watch progress across devices'
+                  : 'Join Comvie to back up your library to the cloud'}
             </p>
-            {step === 'email' ? (
-              <input
-                className="field"
-                type="email"
-                autoComplete="email"
-                autoFocus
-                placeholder="Email address"
-                value={email}
-                disabled={busy}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError(null);
-                }}
-              />
-            ) : (
-              <input
-                className="field code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                autoFocus
-                placeholder="••••••"
-                value={code}
-                disabled={busy}
-                onChange={(e) => {
-                  setCode(e.target.value.replace(/\D/g, '').slice(0, 10));
-                  setError(null);
-                }}
-              />
+
+            {step === 'form' && (
+              <div className="seg auth-seg" role="tablist" aria-label="Mode">
+                <button type="button" role="tab" aria-selected={mode === 'in'} className={mode === 'in' ? 'on' : ''} onClick={() => { setMode('in'); setError(null); }}>Sign In</button>
+                <button type="button" role="tab" aria-selected={mode === 'up'} className={mode === 'up' ? 'on' : ''} onClick={() => { setMode('up'); setError(null); }}>Register</button>
+              </div>
             )}
+
+            {step === 'form' ? (
+              <>
+                {mode === 'up' && (
+                  <label className="auth-label">
+                    Username (Optional)
+                    <span className="auth-input">
+                      <span aria-hidden="true">👤</span>
+                      <input autoComplete="username" placeholder="movie_buff" maxLength={30} value={username} disabled={busy} onChange={(e) => setUsername(e.target.value)} />
+                    </span>
+                  </label>
+                )}
+                <label className="auth-label">
+                  Email Address
+                  <span className="auth-input">
+                    <span aria-hidden="true">✉</span>
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      autoFocus
+                      placeholder="name@example.com"
+                      value={email}
+                      disabled={busy}
+                      onChange={(e) => { setEmail(e.target.value); setError(null); }}
+                    />
+                  </span>
+                </label>
+                <label className="auth-label">
+                  Password
+                  <span className="auth-input">
+                    <span aria-hidden="true">🔒</span>
+                    <input
+                      type="password"
+                      autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
+                      placeholder="••••••••"
+                      value={password}
+                      disabled={busy}
+                      onChange={(e) => { setPassword(e.target.value); setError(null); }}
+                    />
+                  </span>
+                </label>
+              </>
+            ) : (
+              <label className="auth-label">
+                One-time code
+                <span className="auth-input">
+                  <span aria-hidden="true">🔒</span>
+                  <input
+                    className="code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    autoFocus
+                    placeholder="••••••"
+                    value={code}
+                    disabled={busy}
+                    onChange={(e) => { setCode(e.target.value.replace(/\D/g, '').slice(0, 10)); setError(null); }}
+                  />
+                </span>
+              </label>
+            )}
+
             {error ? <p className="error">{error}</p> : info ? <p className="muted small">{info}</p> : null}
-            <button className="btn primary wide" type="submit" disabled={busy}>
-              {busy ? 'Please wait…' : step === 'email' ? 'Send code' : 'Verify and continue'}
+
+            <button className="btn primary wide auth-go" type="submit" disabled={busy}>
+              {busy ? 'Please wait…' : step === 'code' ? 'Verify and continue' : mode === 'in' ? '⇥ Sign In' : '＋ Create Account'}
             </button>
+
+            {step === 'form' && mode === 'in' && (
+              <div className="modal-links">
+                <button type="button" className="link" disabled={busy} onClick={() => void sendOtp()}>
+                  Forgot password? Email me a code
+                </button>
+              </div>
+            )}
             {step === 'code' && (
               <div className="modal-links">
-                <button type="button" className="link" disabled={busy || cooldown > 0} onClick={() => void send()}>
+                <button type="button" className="link" disabled={busy || cooldown > 0} onClick={() => void sendOtp()}>
                   {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
                 </button>
                 <button
                   type="button"
                   className="link"
                   disabled={busy}
-                  onClick={() => {
-                    setStep('email');
-                    setCode('');
-                    setError(null);
-                    setInfo(null);
-                  }}
+                  onClick={() => { setStep('form'); setCode(''); setError(null); setInfo(null); }}
                 >
-                  Change email
+                  Back
                 </button>
               </div>
             )}

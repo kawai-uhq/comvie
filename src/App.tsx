@@ -6,6 +6,7 @@ import Detail from './pages/Detail';
 import GenreResults from './pages/GenreResults';
 import Genres from './pages/Genres';
 import Explore from './pages/Explore';
+import Tooltip from './components/Tooltip';
 import Floating from './components/Floating';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -51,6 +52,7 @@ export default function App() {
       {!watching && <Footer />}
       {!watching && <Floating />}
       <AuthModal />
+      <Tooltip />
     </>
   );
 }
