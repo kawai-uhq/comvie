@@ -14,7 +14,7 @@ export default function DetailPage() {
   const { type, id } = useParams();
   const t: MediaType = type === 'tv' ? 'tv' : 'movie';
   const mid = Number(id);
-  const { isFavorite, toggleFavorite, history } = useApp();
+  const { isFavorite, toggleFavorite, isLoved, toggleLoved, history } = useApp();
 
   const [d, setD] = useState<Details | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +73,7 @@ export default function DetailPage() {
   const resume = history.find((w) => mediaKey(w.media) === mediaKey(m));
   const playTo = `/watch/${m.type}/${m.id}${m.type === 'tv' ? `?s=${resume?.season ?? 1}&e=${resume?.episode ?? 1}` : ''}`;
   const fav = isFavorite(m);
+  const love = isLoved(m);
   const y1 = d.firstAir.slice(0, 4) || m.year;
   const y2 = d.lastAir.slice(0, 4);
   const yearRange =
@@ -104,7 +105,10 @@ export default function DetailPage() {
                 ▶ {resume ? (m.type === 'tv' && resume.season ? `Resume S${resume.season} E${resume.episode}` : 'Resume') : 'Play'}
               </Link>
               {trailer && <button className="btn ghost" onClick={() => setShowTrailer(true)}>▶ Watch Trailer</button>}
-              <button className="btn ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ In My List' : '+ My List'}</button>
+              <div className="td-row2">
+                <button className="btn ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ Watchlist' : '🔖 Watchlist'}</button>
+                <button className="btn ghost" aria-pressed={love} onClick={() => toggleLoved(m)}>{love ? '♥ Favorite' : '♡ Add Favorite'}</button>
+              </div>
               <button className="btn ghost" onClick={() => void share()}>Share</button>
               {toast && <p className="muted small" role="status">{toast}</p>}
             </div>

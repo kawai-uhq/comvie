@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useNewEpisodes } from '../lib/useNewEpisodes';
 import { useApp } from '../state';
 import Logo from './Logo';
 import SearchBox from './SearchBox';
@@ -27,6 +28,7 @@ export default function Navbar() {
   const nav = useNavigate();
   const { pathname } = useLocation();
   const { session, openAuth } = useApp();
+  const fresh = useNewEpisodes();
   const [q, setQ] = useState('');
   const [solid, setSolid] = useState(false);
 
@@ -50,7 +52,7 @@ export default function Navbar() {
             <NavLink to="/tv"><Icon d={icons.tv} />TV Shows</NavLink>
             <NavLink to="/live"><Icon d={icons.live} />Live TV</NavLink>
             <NavLink to="/genres"><Icon d={icons.genres} />Genres</NavLink>
-            <NavLink to="/list"><Icon d={icons.list} />My Library</NavLink>
+            <NavLink to="/list"><Icon d={icons.list} />My Library{fresh.size > 0 && <span className="nav-dot" aria-label={`${fresh.size} new episodes`} data-tip={`${fresh.size} new episode${fresh.size > 1 ? 's' : ''}`} />}</NavLink>
           </nav>
           <SearchBox
             className="nav-search"
@@ -81,7 +83,7 @@ export default function Navbar() {
         <NavLink to="/movies"><Icon d={icons.movie} /><span>Movies</span></NavLink>
         <NavLink to="/tv"><Icon d={icons.tv} /><span>TV</span></NavLink>
         <NavLink to="/live"><Icon d={icons.live} /><span>Live</span></NavLink>
-        <NavLink to="/list"><Icon d={icons.list} /><span>Library</span></NavLink>
+        <NavLink to="/list"><Icon d={icons.list} /><span>Library</span>{fresh.size > 0 && <i className="nav-dot" />}</NavLink>
       </nav>
     </>
   );

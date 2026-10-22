@@ -4,6 +4,7 @@ import FeedRow from '../components/FeedRow';
 import { ContinueRow, HomeSkeleton, PosterRow, Status } from '../components/Rows';
 import { tmdb } from '../lib/tmdb';
 import type { Media } from '../lib/types';
+import { useNewEpisodes } from '../lib/useNewEpisodes';
 import { useApp } from '../state';
 
 // Order of the rows under the billboard (the first two use the trending list already loaded for it)
@@ -24,7 +25,8 @@ const FEED_ORDER = [
 ];
 
 export default function Home() {
-  const { favorites, history, removeWatch } = useApp();
+  const { favorites, loved, history, removeWatch } = useApp();
+  const fresh = useNewEpisodes();
   const [trending, setTrending] = useState<Media[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +46,8 @@ export default function Home() {
     <main className="page home">
       <Billboard items={heroes} />
       <ContinueRow items={history} onRemove={removeWatch} />
-      <PosterRow title="My List" items={favorites} to="/list" />
+      <PosterRow title="My Watchlist" items={favorites} to="/list" fresh={fresh} />
+      <PosterRow title="My Favorites" items={loved} to="/list" fresh={fresh} />
       <PosterRow title="Trending Today" items={trending} to="/explore/trending-day" />
       {FEED_ORDER.map((f) => (
         <FeedRow key={f} feed={f} />

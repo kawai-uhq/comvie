@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Grid, Status } from '../components/Rows';
 import { signInComingSoon } from '../lib/auth';
+import { useNewEpisodes } from '../lib/useNewEpisodes';
 import { mediaKey } from '../lib/types';
 import type { WatchEntry } from '../lib/types';
 import { useApp } from '../state';
 
-type Tab = 'history' | 'list';
+type Tab = 'history' | 'list' | 'loved';
 
 const when = (t: number) =>
   new Date(t).toLocaleString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -32,7 +33,8 @@ function HistoryRow({ w, onRemove }: { w: WatchEntry; onRemove: () => void }) {
 }
 
 export default function MyList() {
-  const { favorites, history, removeWatch, session, openAuth } = useApp();
+  const { favorites, loved, history, removeWatch, session, openAuth } = useApp();
+  const fresh = useNewEpisodes();
   const [tab, setTab] = useState<Tab>('history');
 
   return (
@@ -41,7 +43,7 @@ export default function MyList() {
         <div className="page-head">
           <div>
             <h1 className="title">My <span className="accent">Library</span></h1>
-            <p className="muted">Manage your watch history and saved watchlist{session ? '.' : ' (saved locally on your device).'}</p>
+            <p className="muted">Manage your watch history, watchlist and favorites{session ? '.' : ' (saved locally on your device).'}</p>
           </div>
         </div>
 
@@ -49,6 +51,7 @@ export default function MyList() {
           <div className="pills" style={{ margin: 0, justifyContent: 'flex-start' }} role="tablist">
             <button role="tab" aria-selected={tab === 'history'} className={`pill ${tab === 'history' ? 'on' : ''}`} onClick={() => setTab('history')}>🕘 History ({history.length})</button>
             <button role="tab" aria-selected={tab === 'list'} className={`pill ${tab === 'list' ? 'on' : ''}`} onClick={() => setTab('list')}>🔖 Watchlist ({favorites.length})</button>
+            <button role="tab" aria-selected={tab === 'loved'} className={`pill ${tab === 'loved' ? 'on' : ''}`} onClick={() => setTab('loved')}>♡ Favorites ({loved.length})</button>
           </div>
           {tab === 'history' && history.length > 0 && (
             <button
@@ -72,10 +75,16 @@ export default function MyList() {
               ))}
             </div>
           )
-        ) : favorites.length === 0 ? (
-          <Status kind="empty" text="Nothing here yet. Tap “Watchlist” on any title to save it." />
+        ) : tab === 'list' ? (
+          favorites.length === 0 ? (
+            <Status kind="empty" text="Nothing here yet. Tap “Watchlist” on any title to save it for later." />
+          ) : (
+            <Grid items={favorites} fresh={fresh} />
+          )
+        ) : loved.length === 0 ? (
+          <Status kind="empty" text="No favorites yet. Tap the heart on titles you love." />
         ) : (
-          <Grid items={favorites} />
+          <Grid items={loved} fresh={fresh} />
         )}
 
         {!session && (

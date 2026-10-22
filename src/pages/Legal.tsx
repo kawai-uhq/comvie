@@ -69,7 +69,7 @@ export function Privacy() {
     <Page title="Privacy">
       <p>Comvie is built to collect as little as possible. We don't show ads and don't run our own analytics or trackers.</p>
       <h2>Stored on your device</h2>
-      <p>Your My List, Continue Watching, favorite and recent channels, and settings are saved in your browser's local storage. Clearing your browser data removes them.</p>
+      <p>Your Watchlist, Favorites, Continue Watching, favorite and recent channels, and settings are saved in your browser's local storage. Clearing your browser data removes them.</p>
       <h2>If you sign in (optional)</h2>
       <p>We store your email address and the lists above on our database provider, Supabase, so they follow you between devices. Sign-in uses a one-time code sent to your email, and there are no passwords. To delete your account and data, contact <Contact />.</p>
       <h2>Outside services you connect to</h2>

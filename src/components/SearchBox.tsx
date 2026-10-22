@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { store } from '../lib/storage';
 import { thumbSrc, tmdb } from '../lib/tmdb';
 import { mediaKey } from '../lib/types';
 import type { Media } from '../lib/types';
@@ -82,8 +83,33 @@ export default function SearchBox({
   // Closed until the person types, so arriving on a page with a filled box doesn't pop it open
   const [dismissed, setDismissed] = useState(true);
   const [active, setActive] = useState(-1);
+  // Before typing: recent searches and what's trending
+  const [recents, setRecents] = useState<string[]>(() => store.getRecentSearches());
+  const [trend, setTrend] = useState<Media[]>([]);
+  const [emptyOpen, setEmptyOpen] = useState(false);
 
   const term = value.trim();
+  const showEmpty = focus && emptyOpen && term.length === 0 && (recents.length > 0 || trend.length > 0);
+
+  const addRecent = (t: string) => {
+    const next = [t, ...recents.filter((x) => x.toLowerCase() !== t.toLowerCase())].slice(0, 6);
+    setRecents(next);
+    store.saveRecentSearches(next);
+  };
+  const dropRecent = (t: string) => {
+    const next = recents.filter((x) => x !== t);
+    setRecents(next);
+    store.saveRecentSearches(next);
+  };
+
+  useEffect(() => {
+    if (!emptyOpen || trend.length) return;
+    let live = true;
+    tmdb.feed('trending-day').then((r) => live && setTrend(r.items.slice(0, 5))).catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [emptyOpen, trend.length]);
   const show = focus && !dismissed && term.length >= MIN_CHARS;
   const rows = items.length ? items.length + 1 : 0; // titles + the "See all" row
 
@@ -131,6 +157,8 @@ export default function SearchBox({
     e.preventDefault();
     if (!term) return;
     close();
+    setEmptyOpen(false);
+    addRecent(term);
     input.current?.blur();
     onSubmit(term);
   };
@@ -152,9 +180,10 @@ export default function SearchBox({
         nav(`/title/${m.type}/${m.id}`);
         picked();
       }
-    } else if (e.key === 'Escape' && show) {
+    } else if (e.key === 'Escape' && (show || showEmpty)) {
       e.preventDefault();
       close();
+      setEmptyOpen(false);
     }
   };
 
@@ -191,13 +220,90 @@ export default function SearchBox({
         aria-activedescendant={show && active >= 0 ? `${listId}-${active}` : undefined}
         onChange={(e) => {
           onChange(e.target.value);
+          setEmptyOpen(e.target.value.trim() === '');
           setDismissed(false);
           setActive(-1);
         }}
-        onFocus={() => setFocus(true)}
-        onClick={() => term.length >= MIN_CHARS && setDismissed(false)}
+        onFocus={() => {
+          setFocus(true);
+          if (!term) setEmptyOpen(true);
+        }}
+        onClick={() => {
+          if (term.length >= MIN_CHARS) setDismissed(false);
+          else if (!term) setEmptyOpen(true);
+        }}
         onKeyDown={onKeyDown}
       />
+
+      {showEmpty && (
+        <div className="suggest" onMouseDown={(e) => e.preventDefault()}>
+          {recents.length > 0 && (
+            <>
+              <p className="suggest-head">
+                <span>Recent searches</span>
+                <button
+                  type="button"
+                  className="link"
+                  onClick={() => {
+                    setRecents([]);
+                    store.saveRecentSearches([]);
+                  }}
+                >
+                  Clear
+                </button>
+              </p>
+              <ul aria-label="Recent searches">
+                {recents.map((r) => (
+                  <li key={r} className="recent-row">
+                    <button
+                      type="button"
+                      className="suggest-item"
+                      onClick={() => {
+                        onChange(r);
+                        setEmptyOpen(false);
+                        addRecent(r);
+                        input.current?.blur();
+                        onSubmit(r);
+                      }}
+                    >
+                      <span aria-hidden="true">🕘</span>
+                      <span className="suggest-text"><strong>{r}</strong></span>
+                    </button>
+                    <button type="button" className="x" aria-label={`Remove ${r}`} onClick={() => dropRecent(r)}>✕</button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {trend.length > 0 && (
+            <>
+              <p className="suggest-head"><span>Trending now</span></p>
+              <ul aria-label="Trending now">
+                {trend.map((m) => (
+                  <li key={mediaKey(m)}>
+                    <Link
+                      to={`/title/${m.type}/${m.id}`}
+                      className="suggest-item"
+                      onClick={() => {
+                        setEmptyOpen(false);
+                        picked();
+                      }}
+                    >
+                      <span className="suggest-thumb">
+                        {m.poster ? <img src={thumbSrc(m.poster)} alt="" width={40} height={60} loading="lazy" /> : <b>{m.title.slice(0, 1)}</b>}
+                      </span>
+                      <span className="suggest-text">
+                        <strong>{m.title}</strong>
+                        <small>{meta(m)}</small>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
 
       {show && (
         // keep focus in the input while pressing inside the panel, so a click isn't lost on blur
@@ -213,7 +319,10 @@ export default function SearchBox({
                   className={active === i ? 'on' : ''}
                   onMouseEnter={() => setActive(i)}
                 >
-                  <Link to={`/title/${m.type}/${m.id}`} className="suggest-item" tabIndex={-1} onClick={picked}>
+                  <Link to={`/title/${m.type}/${m.id}`} className="suggest-item" tabIndex={-1} onClick={() => {
+                      addRecent(m.title);
+                      picked();
+                    }}>
                     <span className="suggest-thumb">
                       {m.poster ? <img src={thumbSrc(m.poster)} alt="" width={40} height={60} loading="lazy" /> : <b>{m.title.slice(0, 1)}</b>}
                     </span>

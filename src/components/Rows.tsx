@@ -34,7 +34,7 @@ const canHover = () =>
   typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 /** Poster card. On devices with a mouse, hovering for a moment plays the trailer on the picture. */
-export function Poster({ m, rank }: { m: Media; rank?: number }) {
+export function Poster({ m, rank, fresh }: { m: Media; rank?: number; fresh?: boolean }) {
   const [trailer, setTrailer] = useState<string | null>(null);
   const [box, setBox] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -117,6 +117,7 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
         ) : (
           <span className="poster-missing">{m.title}</span>
         )}
+        {fresh && <span className="pnew">NEW EP</span>}
         <span className={`pbadge ${m.type}`}>{m.type === 'tv' ? 'TV SERIES' : 'MOVIE'}</span>
         <span className={`prate ${rateTone(m.rating)}`}>★ {m.rating.toFixed(1)}</span>
       </span>
@@ -137,13 +138,13 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
   );
 }
 
-export function PosterRow({ title, items, top10, to }: { title: string; items: Media[]; top10?: boolean; to?: string }) {
+export function PosterRow({ title, items, top10, to, fresh }: { title: string; items: Media[]; top10?: boolean; to?: string; fresh?: Set<string> }) {
   if (!items.length) return null;
   const shown = top10 ? items.slice(0, 10) : items;
   return (
     <Row title={title} to={to}>
       {shown.map((m, i) => (
-        <Poster key={mediaKey(m)} m={m} rank={top10 ? i + 1 : undefined} />
+        <Poster key={mediaKey(m)} m={m} rank={top10 ? i + 1 : undefined} fresh={fresh?.has(mediaKey(m))} />
       ))}
     </Row>
   );
@@ -202,11 +203,11 @@ export function ContinueRow({ items, onRemove }: { items: WatchEntry[]; onRemove
   );
 }
 
-export function Grid({ items }: { items: Media[] }) {
+export function Grid({ items, fresh }: { items: Media[]; fresh?: Set<string> }) {
   return (
     <div className="grid">
       {items.map((m) => (
-        <Poster key={mediaKey(m)} m={m} />
+        <Poster key={mediaKey(m)} m={m} fresh={fresh?.has(mediaKey(m))} />
       ))}
     </div>
   );

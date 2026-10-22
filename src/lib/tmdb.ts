@@ -91,6 +91,18 @@ export const FEEDS: Record<string, { title: string; path: string; type: 'all' | 
 };
 
 export const tmdb = {
+  /** A random well-rated title (optionally of one type and genre). */
+  surprise: async (type?: MediaType, genre?: string): Promise<Media | null> => {
+    const t: MediaType = type ?? (Math.random() < 0.5 ? 'movie' : 'tv');
+    const votes = t === 'movie' ? 1500 : 500;
+    const g = genre ? `&with_genres=${genre}` : '';
+    const url = (page: number) =>
+      `/discover/${t}?sort_by=vote_average.desc&vote_count.gte=${votes}${g}&language=en-US&include_adult=false&page=${page}`;
+    let items = await get(url(1 + Math.floor(Math.random() * 5))).then((j) => list(j, t));
+    if (!items.length) items = await get(url(1)).then((j) => list(j, t));
+    const pool = items.filter((m) => m.poster);
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+  },
   /** Any TMDB list path, paged. */
   list: (path: string, type: 'all' | MediaType, page = 1) => {
     const sep = path.includes('?') ? '&' : '?';

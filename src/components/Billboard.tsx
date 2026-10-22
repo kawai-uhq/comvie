@@ -11,7 +11,7 @@ const votesLabel = (n?: number) => (!n ? '' : n >= 1000 ? `${(n / 1000).toFixed(
 
 /** Rotating billboard: each trending title takes its turn every 7 seconds. */
 export default function Billboard({ items }: { items: Media[] }) {
-  const { isFavorite, toggleFavorite, history } = useApp();
+  const { isFavorite, toggleFavorite, isLoved, toggleLoved, history } = useApp();
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
   const [logos, setLogos] = useState<Record<string, string | null>>({});
@@ -63,6 +63,7 @@ export default function Billboard({ items }: { items: Media[] }) {
       {items.map((m, n) => {
         const key = mediaKey(m);
         const fav = isFavorite(m);
+        const love = isLoved(m);
         const on = n === i;
         const logo = logos[key];
         const resume = history.find((w) => mediaKey(w.media) === key);
@@ -107,7 +108,7 @@ export default function Billboard({ items }: { items: Media[] }) {
                 <Link className="btn primary glow" to={playTo}>▶ {playLabel}</Link>
                 <Link className="btn ghost" to={`/title/${m.type}/${m.id}`}>ⓘ Info</Link>
                 <button className="btn ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ Watchlist' : '🔖 Watchlist'}</button>
-                <button className="btn ghost round" aria-label="Favorite" aria-pressed={fav} onClick={() => toggleFavorite(m)}>{fav ? '♥' : '♡'}</button>
+                <button className="btn ghost round" aria-label={love ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={love} onClick={() => toggleLoved(m)}>{love ? '♥' : '♡'}</button>
               </div>
             </div>
           </div>

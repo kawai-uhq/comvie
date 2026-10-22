@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { GridSkeleton, Poster, Status } from '../components/Rows';
+import Surprise from '../components/Surprise';
 import { genresFor } from '../lib/genres';
 import { FEEDS, tmdb } from '../lib/tmdb';
 import { mediaKey } from '../lib/types';
@@ -122,6 +123,7 @@ export default function Explore({ kind }: { kind?: MediaType }) {
           </div>
           {kind && (
             <div className="head-tools">
+              <Surprise type={kind} genre={genre} />
               <select className="field select dd" value={genre} onChange={(e) => setGenre(e.target.value)} aria-label="Genre">
                 <option value="">{kind === 'tv' ? 'All TV Genres' : 'All Genres'}</option>
                 {genresFor(kind).map((g) => (

@@ -1,3 +1,16 @@
 {
-  "rewrites": [{ "source": "/((?!api/|assets/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/title/:type/:id",
+      "destination": "/api/title?type=:type&id=:id"
+    },
+    {
+      "source": "/watch/:type/:id",
+      "destination": "/api/title?type=:type&id=:id"
+    },
+    {
+      "source": "/((?!api/|assets/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }

@@ -5,6 +5,7 @@ import type { Media, WatchEntry } from './types';
 
 export interface CloudData {
   favorites: Media[];
+  loved: Media[];
   history: WatchEntry[];
 }
 
@@ -50,11 +51,12 @@ const fromJson = (o: any): Media => ({
   year: o.year ?? ''
 });
 
+const LOVE = 'love:';
 const UPSERT = 'resolution=merge-duplicates,return=minimal';
 
 export async function fetchCloud(token: string): Promise<CloudData | null> {
   const [fav, hist] = await Promise.all([
-    rest('GET', '/favorites?select=media&order=created_at.desc', token),
+    rest('GET', '/favorites?select=media_key,media&order=created_at.desc', token),
     rest(
       'GET',
       `/watch_history?select=media,season,episode,provider_id,watched_at&order=watched_at.desc&limit=${MAX_HISTORY}`,
@@ -65,7 +67,9 @@ export async function fetchCloud(token: string): Promise<CloudData | null> {
   const favRows = (await fav.json()) as any[];
   const histRows = (await hist.json()) as any[];
   return {
-    favorites: favRows.filter((r) => r.media).map((r) => fromJson(r.media)),
+    // Favorites share the table with the watchlist; their keys start with "love:"
+    favorites: favRows.filter((r) => r.media && !String(r.media_key).startsWith(LOVE)).map((r) => fromJson(r.media)),
+    loved: favRows.filter((r) => r.media && String(r.media_key).startsWith(LOVE)).map((r) => fromJson(r.media)),
     history: histRows
       .filter((r) => r.media)
       .map((r) => ({
@@ -108,3 +112,15 @@ export const deleteFavorite = (token: string, key: string) =>
 
 export const deleteWatch = (token: string, key: string) =>
   rest('DELETE', `/watch_history?media_key=eq.${encodeURIComponent(key)}`, token);
+
+export const upsertLoved = (token: string, list: Media[]) =>
+  rest(
+    'POST',
+    '/favorites?on_conflict=user_id,media_key',
+    token,
+    list.map((m) => ({ media_key: LOVE + mediaKey(m), media: toJson(m) })),
+    UPSERT
+  );
+
+export const deleteLoved = (token: string, key: string) =>
+  rest('DELETE', `/favorites?media_key=eq.${encodeURIComponent(LOVE + key)}`, token);

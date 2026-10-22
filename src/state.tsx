@@ -8,6 +8,9 @@ import type { Media, Session, WatchEntry } from './lib/types';
 
 interface AppState {
   favorites: Media[];
+  loved: Media[];
+  isLoved: (m: Media) => boolean;
+  toggleLoved: (m: Media) => void;
   history: WatchEntry[];
   provider: string;
   setProvider: (id: string) => void;
@@ -43,12 +46,14 @@ const newestPerTitle = (list: WatchEntry[]): WatchEntry[] => {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<Media[]>(() => store.getFavorites());
+  const [loved, setLoved] = useState<Media[]>(() => store.getLoved());
   const [history, setHistory] = useState<WatchEntry[]>(() => store.getHistory());
   const [provider, setProviderState] = useState<string>(() => store.getProvider());
   const [session, setSessionState] = useState<Session | null>(() => store.getSession());
   const [authOpen, setAuthOpen] = useState(false);
 
   const favRef = useRef(favorites);
+  const lovedRef = useRef(loved);
   const histRef = useRef(history);
   const sessionRef = useRef(session);
 
@@ -56,6 +61,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     favRef.current = list;
     setFavorites(list);
     store.saveFavorites(list);
+  }, []);
+  const applyLoved = useCallback((list: Media[]) => {
+    lovedRef.current = list;
+    setLoved(list);
+    store.saveLoved(list);
   }, []);
   const applyHistory = useCallback((list: WatchEntry[]) => {
     histRef.current = list;
@@ -92,13 +102,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const cloud = await sync.fetchCloud(token);
         if (cloud) {
           applyFavorites(cloud.favorites);
+          applyLoved(cloud.loved);
           applyHistory(cloud.history);
         }
       } catch {
         /* offline: keep the local copy */
       }
     })();
-  }, [getToken, applyFavorites, applyHistory]);
+  }, [getToken, applyFavorites, applyLoved, applyHistory]);
 
   const background = (job: (token: string) => Promise<unknown>) => {
     void (async () => {
@@ -117,6 +128,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const has = favRef.current.some((x) => mediaKey(x) === key);
     applyFavorites(has ? favRef.current.filter((x) => mediaKey(x) !== key) : [m, ...favRef.current]);
     background((t) => (has ? sync.deleteFavorite(t, key) : sync.upsertFavorites(t, [m])));
+  };
+
+  const toggleLoved = (m: Media) => {
+    const key = mediaKey(m);
+    const has = lovedRef.current.some((x) => mediaKey(x) === key);
+    applyLoved(has ? lovedRef.current.filter((x) => mediaKey(x) !== key) : [m, ...lovedRef.current]);
+    background((t) => (has ? sync.deleteLoved(t, key) : sync.upsertLoved(t, [m])));
   };
 
   const recordWatch = (e: WatchEntry) => {
@@ -145,10 +163,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
           seen.add(k);
           return true;
         });
+        const seenLoved = new Set<string>();
+        const loves = [...lovedRef.current, ...cloud.loved].filter((m) => {
+          const k = mediaKey(m);
+          if (seenLoved.has(k)) return false;
+          seenLoved.add(k);
+          return true;
+        });
         const hist = newestPerTitle([...histRef.current, ...cloud.history]);
+        applyLoved(loves);
         applyFavorites(favs);
         applyHistory(hist);
         if (favs.length) await sync.upsertFavorites(s.accessToken, favs);
+        if (loves.length) await sync.upsertLoved(s.accessToken, loves);
         if (hist.length) await sync.upsertHistory(s.accessToken, hist);
       } catch {
         /* the lists stay on this device */
@@ -165,6 +192,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppState>(
     () => ({
       favorites,
+      loved,
+      isLoved: (m) => loved.some((x) => mediaKey(x) === mediaKey(m)),
+      toggleLoved,
       history,
       provider,
       setProvider: (id) => {
@@ -184,7 +214,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }),
     // handlers read refs, so they only need to refresh with the data they sit next to
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [favorites, history, provider, session, authOpen]
+    [favorites, loved, history, provider, session, authOpen]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

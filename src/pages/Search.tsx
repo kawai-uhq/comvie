@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Status } from '../components/Rows';
 import SearchBox from '../components/SearchBox';
+import Surprise from '../components/Surprise';
 import { posterSet, posterSrc, tmdb } from '../lib/tmdb';
 import { mediaKey } from '../lib/types';
 import type { Media } from '../lib/types';
@@ -128,6 +129,7 @@ export default function Search() {
               SEARCH
             </button>
           </div>
+          <p style={{ marginTop: 14 }}><Surprise /></p>
         </div>
 
         {error ? (

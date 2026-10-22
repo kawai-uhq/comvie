@@ -614,3 +614,19 @@ html.smooth .row-scroll { overscroll-behavior-x: contain; -webkit-overflow-scrol
 html.smooth .poster-img img, html.smooth .rimg img { transition: transform 0.3s ease; will-change: transform; }
 html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
 @media (hover: none) { html.smooth { scroll-behavior: auto; } }
+.pill.warn { border-color: rgba(255, 107, 87, 0.45); color: var(--accent); }
+
+/* New-episode badge, favorites buttons */
+.pnew { position: absolute; left: 8px; bottom: 8px; z-index: 2; padding: 3px 8px; border-radius: 7px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 900; letter-spacing: 0.06em; }
+.nav-dot { display: inline-block; width: 8px; height: 8px; margin-left: 2px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px rgba(255, 107, 87, 0.25); vertical-align: middle; }
+.tabbar a { position: relative; }
+.tabbar .nav-dot { position: absolute; top: 6px; left: calc(50% + 8px); margin: 0; }
+.td-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.td-row2 .btn { padding: 0 10px; }
+
+/* Search start panel */
+.suggest-head { display: flex; align-items: center; justify-content: space-between; margin: 0; padding: 10px 14px 4px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.suggest-head .link { font-size: 12px; text-transform: none; letter-spacing: 0; }
+.recent-row { display: flex; align-items: center; }
+.recent-row .suggest-item { flex: 1; min-width: 0; }
+.recent-row .x { margin-right: 8px; width: 28px; height: 28px; flex: none; }

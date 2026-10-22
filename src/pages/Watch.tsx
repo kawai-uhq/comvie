@@ -12,7 +12,7 @@ export default function Watch() {
   const mid = Number(id);
   const [sp, setSp] = useSearchParams();
   const nav = useNavigate();
-  const { provider: defaultProvider, recordWatch, isFavorite, toggleFavorite } = useApp();
+  const { provider: defaultProvider, recordWatch, isFavorite, toggleFavorite, isLoved, toggleLoved } = useApp();
 
   const season = Math.max(1, Number(sp.get('s')) || 1);
   const episode = Math.max(1, Number(sp.get('e')) || 1);
@@ -68,10 +68,14 @@ export default function Watch() {
   const setServer = (p: string) =>
     setSp(t === 'tv' ? { s: String(season), e: String(episode), p } : { p }, { replace: true });
 
-  const sandbox = protect ? 'allow-scripts allow-same-origin allow-forms allow-presentation' : undefined;
+  // Servers that refuse to run in a sandbox ("Please disable sandbox") are loaded without it
+  const sandboxed = protect && provider.sandboxOk;
+  const sandbox = sandboxed ? 'allow-scripts allow-same-origin allow-forms allow-presentation' : undefined;
+  const nextServer = providers[(providers.findIndex((p) => p.id === pid) + 1) % providers.length];
 
   const m = d?.media;
   const fav = m ? isFavorite(m) : false;
+  const love = m ? isLoved(m) : false;
   const epName = eps.find((x) => x.number === episode)?.name;
 
   return (
@@ -81,14 +85,14 @@ export default function Watch() {
         <span className="sp" />
         {m && (
           <>
-            <button className="btn small ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ In My List' : '+ Watchlist'}</button>
-            <button className="btn small ghost" aria-label="Favorite" aria-pressed={fav} onClick={() => toggleFavorite(m)}>{fav ? '♥' : '♡'}</button>
+            <button className="btn small ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ In Watchlist' : '+ Watchlist'}</button>
+            <button className="btn small ghost" aria-label={love ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={love} onClick={() => toggleLoved(m)}>{love ? '♥' : '♡'}</button>
           </>
         )}
       </div>
 
       <iframe
-        key={`${url}|${reload}|${protect}`}
+        key={`${url}|${reload}|${sandboxed}`}
         className="wp-frame"
         src={url}
         title={m?.title ?? 'Player'}
@@ -106,7 +110,13 @@ export default function Watch() {
           </button>
         ))}
         <button className="pill" onClick={() => setReload((n) => n + 1)}>↻ Reload</button>
+        <button className="pill warn" onClick={() => setServer(nextServer.id)}>Not working? Try {nextServer.name}</button>
       </div>
+      {protect && !provider.sandboxOk && (
+        <p className="muted small" style={{ margin: '-4px 0 10px' }}>
+          {provider.name} can't run with popup protection, so it plays without it. Server 1 supports it.
+        </p>
+      )}
 
       <div className="wp-info">
         {t === 'tv' && <span className="chip stat">Season {season} • Episode {episode}</span>}
