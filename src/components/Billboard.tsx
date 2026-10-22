@@ -81,6 +81,8 @@ export default function Billboard({ items }: { items: Media[] }) {
                 sizes="100vw"
                 alt=""
                 loading={n === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                {...(n === 0 ? ({ fetchpriority: 'high' } as Record<string, string>) : {})}
               />
             )}
             <div className="billboard-fade" />

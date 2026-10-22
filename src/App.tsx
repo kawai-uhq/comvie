@@ -1,22 +1,22 @@
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import AuthModal from './components/AuthModal';
 import Navbar from './components/Navbar';
-import Detail from './pages/Detail';
-import GenreResults from './pages/GenreResults';
-import Genres from './pages/Genres';
-import Explore from './pages/Explore';
+const Detail = lazy(() => import('./pages/Detail'));
+const GenreResults = lazy(() => import('./pages/GenreResults'));
+const Genres = lazy(() => import('./pages/Genres'));
+const Explore = lazy(() => import('./pages/Explore'));
 import Tooltip from './components/Tooltip';
 import Floating from './components/Floating';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import { About, Privacy, Takedown, Terms } from './pages/Legal';
-import Live from './pages/Live';
-import PersonPage from './pages/Person';
-import MyList from './pages/MyList';
-import Search from './pages/Search';
-import Settings from './pages/Settings';
-import Watch from './pages/Watch';
+const Live = lazy(() => import('./pages/Live'));
+const PersonPage = lazy(() => import('./pages/Person'));
+const MyList = lazy(() => import('./pages/MyList'));
+const Search = lazy(() => import('./pages/Search'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Watch = lazy(() => import('./pages/Watch'));
 
 export default function App() {
   const { pathname } = useLocation();
@@ -29,6 +29,7 @@ export default function App() {
   return (
     <>
       {!watching && <Navbar />}
+      <Suspense fallback={<div className="status" style={{ minHeight: '70vh' }}><div className="spinner" aria-label="Loading" /></div>}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/movies" element={<Explore key="m" kind="movie" />} />
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/watch/:type/:id" element={<Watch />} />
         <Route path="*" element={<Home />} />
       </Routes>
+      </Suspense>
       {!watching && <Footer />}
       {!watching && <Floating />}
       <AuthModal />

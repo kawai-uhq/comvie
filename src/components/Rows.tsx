@@ -65,7 +65,13 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
     return { left, top, width, height };
   };
 
+  // Warm the title page so it opens instantly
+  const warm = () => {
+    tmdb.details(m.type, m.id).catch(() => undefined);
+  };
+
   const enter = () => {
+    warm();
     if (!canHover()) return;
     hovering.current = true;
     window.clearTimeout(timer.current);
@@ -92,6 +98,7 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
       to={`/title/${m.type}/${m.id}`}
       className={`poster ${rank ? 'ranked' : ''}`}
       onMouseEnter={enter}
+      onTouchStart={warm}
       onMouseLeave={leave}
     >
       {rank ? <span className="rank" aria-hidden="true">{rank}</span> : null}
@@ -103,6 +110,7 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
             sizes="(max-width: 760px) 34vw, 190px"
             alt={m.title}
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <span className="poster-missing">{m.title}</span>
