@@ -1,5 +1,6 @@
 import { signInComingSoon } from '../lib/auth';
 import { providers } from '../lib/providers';
+import { isSmooth, setSmooth } from '../lib/perf';
 import { store } from '../lib/storage';
 import { useState } from 'react';
 import { useApp } from '../state';
@@ -7,6 +8,7 @@ import { useApp } from '../state';
 export default function Settings() {
   const { provider, setProvider, session, openAuth, signOut } = useApp();
   const [protect, setProtect] = useState(store.getProtect());
+  const [smooth, setSmoothOn] = useState(isSmooth());
 
   return (
     <main className="page pad-top">
@@ -36,6 +38,20 @@ export default function Settings() {
           <span>Block popups and redirects from the player</span>
         </label>
         <p className="muted small">If a server refuses to load, switch this off or pick another server.</p>
+
+        <h2 className="label">PERFORMANCE</h2>
+        <label className="radio">
+          <input
+            type="checkbox"
+            checked={smooth}
+            onChange={(e) => {
+              setSmoothOn(e.target.checked);
+              setSmooth(e.target.checked);
+            }}
+          />
+          <span>Smooth mode</span>
+        </label>
+        <p className="muted small">Fade-in pages, lighter card effects and instant title pages. If your device feels slow or you prefer the plain look, switch it off.</p>
 
         <h2 className="label">ACCOUNT</h2>
         {signInComingSoon ? (

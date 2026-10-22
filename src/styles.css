@@ -598,20 +598,19 @@ button, .btn, .pill, .chip, .rbtn, .nav-links a, .tabbar a, .hplay, .fab-install
 button:active:not(:disabled), .btn:active:not(:disabled), .pill:active, .chip:active, .rbtn:active, .nav-links a:active, .tabbar a:active, .hplay:active, .gear:active, .lp-icon:active, .x:active { transform: scale(0.94); filter: brightness(1.25); }
 .poster:active .poster-img, .rcard:active .rimg, .genre-card:active, .channel:active, .ep-row:active, .ep-card:active { transform: scale(0.97); }
 
-/* ---- Smoothness ---- */
-html { scroll-behavior: smooth; }
+/* ---- Smooth mode (Settings > Performance). Everything here applies only when html.smooth is set. ---- */
+html.smooth { scroll-behavior: smooth; }
 @keyframes page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.page { animation: page-in 0.28s ease-out both; }
+html.smooth .page { animation: page-in 0.28s ease-out both; }
 /* Blur is expensive when repeated on every card: use solid chips instead */
-.pbadge, .prate, .rbadge, .rrate { backdrop-filter: none; -webkit-backdrop-filter: none; }
-.pbadge { background: rgba(18, 12, 24, 0.9); }
-.prate.good { background: rgba(14, 52, 40, 0.92); }
-.prate.mid { background: rgba(60, 46, 16, 0.92); }
-.prate.low { background: rgba(62, 20, 30, 0.92); }
-.rrate { background: rgba(18, 12, 24, 0.9); }
-.poster-img, .rimg, .row-scroll { transform: translateZ(0); }
-.row-scroll { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
-img { image-rendering: auto; }
-.poster-img img, .rimg img { transition: transform 0.3s ease; will-change: transform; }
-.poster:hover .poster-img img { transform: scale(1.05); }
-@media (hover: none) { html { scroll-behavior: auto; } }
+html.smooth .pbadge, html.smooth .prate, html.smooth .rbadge, html.smooth .rrate { backdrop-filter: none; -webkit-backdrop-filter: none; }
+html.smooth .pbadge { background: rgba(18, 12, 24, 0.9); }
+html.smooth .prate.good { background: rgba(14, 52, 40, 0.92); }
+html.smooth .prate.mid { background: rgba(60, 46, 16, 0.92); }
+html.smooth .prate.low { background: rgba(62, 20, 30, 0.92); }
+html.smooth .rrate { background: rgba(18, 12, 24, 0.9); }
+html.smooth .poster-img, html.smooth .rimg, html.smooth .row-scroll { transform: translateZ(0); }
+html.smooth .row-scroll { overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+html.smooth .poster-img img, html.smooth .rimg img { transition: transform 0.3s ease; will-change: transform; }
+html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
+@media (hover: none) { html.smooth { scroll-behavior: auto; } }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { isSmooth } from '../lib/perf';
 import { IMG, posterSet, posterSrc, tmdb } from '../lib/tmdb';
 import { mediaKey, progressLabel } from '../lib/types';
 import type { Details, Media, WatchEntry } from '../lib/types';
@@ -67,6 +68,7 @@ export function Poster({ m, rank }: { m: Media; rank?: number }) {
 
   // Warm the title page so it opens instantly
   const warm = () => {
+    if (!isSmooth()) return;
     tmdb.details(m.type, m.id).catch(() => undefined);
   };
 
