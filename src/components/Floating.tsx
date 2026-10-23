@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Icon from './Icon';
 
 interface InstallEvent extends Event {
   prompt: () => Promise<void>;
@@ -36,12 +37,12 @@ export default function Floating() {
             void install.prompt().finally(() => setInstall(null));
           }}
         >
-          ⤓ Install App
+          <Icon name="download" size={15} />Install App
         </button>
       )}
       {top && (
         <button className="fab-top" aria-label="Back to top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          ↑
+          <Icon name="arrowUp" size={20} />
         </button>
       )}
     </>

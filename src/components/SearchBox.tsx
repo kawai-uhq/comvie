@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import Icon from './Icon';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { store } from '../lib/storage';
@@ -188,7 +189,7 @@ export default function SearchBox({
   };
 
   const meta = (m: Media) =>
-    [m.type === 'tv' ? 'Series' : 'Movie', m.year, m.rating > 0 ? `★ ${m.rating.toFixed(1)}` : '']
+    [m.type === 'tv' ? 'Series' : 'Movie', m.year, m.rating > 0 ? `${m.rating.toFixed(1)} rating` : '']
       .filter(Boolean)
       .join(' · ');
 
@@ -266,10 +267,10 @@ export default function SearchBox({
                         onSubmit(r);
                       }}
                     >
-                      <span aria-hidden="true">🕘</span>
+                      <Icon name="history" size={16} />
                       <span className="suggest-text"><strong>{r}</strong></span>
                     </button>
-                    <button type="button" className="x" aria-label={`Remove ${r}`} onClick={() => dropRecent(r)}>✕</button>
+                    <button type="button" className="x" aria-label={`Remove ${r}`} onClick={() => dropRecent(r)}><Icon name="x" size={13} /></button>
                   </li>
                 ))}
               </ul>
@@ -342,7 +343,7 @@ export default function SearchBox({
               >
                 <button type="submit" className="suggest-item suggest-all" tabIndex={-1}>
                   <span>See all results for “{term}”</span>
-                  <span aria-hidden="true">→</span>
+                  <Icon name="arrowRight" size={15} />
                 </button>
               </li>
             </ul>

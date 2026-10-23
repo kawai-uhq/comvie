@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { GridSkeleton, Poster, Status } from '../components/Rows';
@@ -178,7 +179,7 @@ export default function Explore({ kind }: { kind?: MediaType }) {
           </>
         )}
         {!kind && (
-          <p className="muted small"><Link to="/" className="link">‹ Back to home</Link></p>
+          <p className="muted small"><Link to="/" className="link"><Icon name="chevronLeft" size={14} />Back to home</Link></p>
         )}
       </div>
     </main>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Icon from '../components/Icon';
 import DiscordIcon from '../components/DiscordIcon';
 import { DISCORD_URL } from '../lib/links';
 
@@ -8,7 +9,7 @@ export default function Contact() {
   return (
     <main className="page pad-top">
       <div className="container narrow legal">
-        <p className="crumb"><Link to="/" className="link">‹ Home</Link></p>
+        <p className="crumb"><Link to="/" className="link"><Icon name="chevronLeft" size={14} />Home</Link></p>
         <h1 className="title">Contact us</h1>
         <p>Questions, feedback, a broken server or a title you'd like to see? Come say hi in our Discord server — it's the fastest way to reach us.</p>
         <a className="contact-card" href={DISCORD_URL} target="_blank" rel="noopener noreferrer" aria-label="Join the Comvie Discord server">
@@ -16,7 +17,7 @@ export default function Contact() {
           <span>
             <strong>Comvie on Discord</strong>
           </span>
-          <b>Join ›</b>
+          <b className="join">Join<Icon name="chevronRight" size={15} /></b>
         </a>
         {EMAIL && (
           <p>

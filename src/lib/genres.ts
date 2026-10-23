@@ -51,8 +51,9 @@ export const genresFor = (t: MediaType) => (t === 'tv' ? tvGenres : movieGenres)
 export const findGenre = (t: MediaType, id: number) => genresFor(t).find((g) => g.id === id);
 
 const ICONS: Record<number, string> = {
-  28: '⚔️', 12: '🧭', 16: '✨', 35: '😄', 80: '🛡️', 99: '🎥', 18: '🎭', 10751: '👪', 14: '🪄', 36: '🏛️',
-  27: '👻', 10402: '🎵', 9648: '🔍', 10749: '❤️', 878: '🚀', 10770: '📺', 53: '🔥', 10752: '💣', 37: '🌵',
-  10759: '🗡️', 10762: '🧸', 10763: '📰', 10764: '📷', 10765: '🚀', 10766: '📺', 10767: '💬', 10768: '🏢'
+  28: 'zap', 12: 'compass', 16: 'sparkles', 35: 'smile', 80: 'shield', 99: 'video', 18: 'ticket', 10751: 'users', 14: 'moon', 36: 'landmark',
+  27: 'ghost', 10402: 'music', 9648: 'search', 10749: 'heart', 878: 'rocket', 10770: 'tv', 53: 'flame', 10752: 'flag', 37: 'sun',
+  10759: 'zap', 10762: 'smile', 10763: 'newspaper', 10764: 'camera', 10765: 'rocket', 10766: 'tv', 10767: 'message', 10768: 'landmark'
 };
-export const genreIcon = (id: number) => ICONS[id] ?? '🎬';
+/** Name of an Icon for a genre */
+export const genreIcon = (id: number) => ICONS[id] ?? 'film';

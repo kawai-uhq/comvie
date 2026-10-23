@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Icon from '../components/Icon';
+import type { IconName } from '../components/Icon';
 import { genreIcon, genresFor } from '../lib/genres';
 import type { MediaType } from '../lib/types';
 
@@ -26,10 +28,10 @@ export default function Genres() {
               className="genre-card"
               style={{ '--h': g.hue } as React.CSSProperties}
             >
-              <span className="g-icon" aria-hidden="true">{genreIcon(g.id)}</span>
-              <span className="g-big" aria-hidden="true">{genreIcon(g.id)}</span>
+              <span className="g-icon" aria-hidden="true"><Icon name={genreIcon(g.id) as IconName} size={24} /></span>
+              <span className="g-big" aria-hidden="true"><Icon name={genreIcon(g.id) as IconName} size={120} /></span>
               <strong>{g.name}</strong>
-              <small>Explore {type === 'tv' ? 'Shows' : 'Movies'} →</small>
+              <small>Explore {type === 'tv' ? 'Shows' : 'Movies'}<Icon name="arrowRight" size={13} /></small>
             </Link>
           ))}
         </div>

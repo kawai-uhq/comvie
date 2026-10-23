@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { DetailSkeleton, Grid, Status } from '../components/Rows';
@@ -32,7 +33,7 @@ export default function PersonPage() {
   return (
     <main className="page pad-top">
       <div className="container">
-        <p className="crumb"><button className="link" onClick={() => window.history.back()}>‹ Back</button></p>
+        <p className="crumb"><button className="link" onClick={() => window.history.back()}><Icon name="chevronLeft" size={14} />Back</button></p>
         <div className="person-head">
           <span className="person-photo">
             {p.photo ? <img src={profileSrc(p.photo)} alt={p.name} /> : <b>{p.name.slice(0, 1)}</b>}

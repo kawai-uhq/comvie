@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AuthError, sendCode, signInComingSoon, signInPassword, signUpPassword, verifyCode } from '../lib/auth';
 import { useApp } from '../state';
+import Icon from './Icon';
 
 const RESEND_SECONDS = 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -97,12 +98,12 @@ export default function AuthModal() {
     setBusy(false);
   };
 
-  const icon = step === 'code' || mode === 'in' ? '⇥' : '＋';
+  const icon = <Icon name={step === 'code' || mode === 'in' ? 'login' : 'userPlus'} size={24} />;
 
   return (
     <div className="modal-back blur" onMouseDown={(e) => e.target === e.currentTarget && !busy && closeAuth()}>
       <div className="modal auth" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-        <button className="modal-x" aria-label="Close" onClick={closeAuth} disabled={busy}>✕</button>
+        <button className="modal-x" aria-label="Close" onClick={closeAuth} disabled={busy}><Icon name="x" size={16} /></button>
         <div className="auth-icon" aria-hidden="true">{icon}</div>
         {signInComingSoon ? (
           <>
@@ -141,7 +142,7 @@ export default function AuthModal() {
                   <label className="auth-label">
                     Username (Optional)
                     <span className="auth-input">
-                      <span aria-hidden="true">👤</span>
+                      <Icon name="user" size={17} />
                       <input autoComplete="username" placeholder="movie_buff" maxLength={30} value={username} disabled={busy} onChange={(e) => setUsername(e.target.value)} />
                     </span>
                   </label>
@@ -149,7 +150,7 @@ export default function AuthModal() {
                 <label className="auth-label">
                   Email Address
                   <span className="auth-input">
-                    <span aria-hidden="true">✉</span>
+                    <Icon name="mail" size={17} />
                     <input
                       type="email"
                       autoComplete="email"
@@ -164,7 +165,7 @@ export default function AuthModal() {
                 <label className="auth-label">
                   Password
                   <span className="auth-input">
-                    <span aria-hidden="true">🔒</span>
+                    <Icon name="lock" size={17} />
                     <input
                       type="password"
                       autoComplete={mode === 'in' ? 'current-password' : 'new-password'}
@@ -180,7 +181,7 @@ export default function AuthModal() {
               <label className="auth-label">
                 One-time code
                 <span className="auth-input">
-                  <span aria-hidden="true">🔒</span>
+                  <Icon name="lock" size={17} />
                   <input
                     className="code"
                     inputMode="numeric"
@@ -198,7 +199,7 @@ export default function AuthModal() {
             {error ? <p className="error">{error}</p> : info ? <p className="muted small">{info}</p> : null}
 
             <button className="btn primary wide auth-go" type="submit" disabled={busy}>
-              {busy ? 'Please wait…' : step === 'code' ? 'Verify and continue' : mode === 'in' ? '⇥ Sign In' : '＋ Create Account'}
+              {busy ? 'Please wait…' : step === 'code' ? 'Verify and continue' : mode === 'in' ? <><Icon name="login" size={16} />Sign In</> : <><Icon name="userPlus" size={16} />Create Account</>}
             </button>
 
             {step === 'form' && mode === 'in' && (

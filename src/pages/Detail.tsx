@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import Icon from '../components/Icon';
+import { votesShort } from '../lib/format';
 import { DetailSkeleton, PosterRow, Row, Status } from '../components/Rows';
 import TrailerModal from '../components/TrailerModal';
 import { IMG, backdropSrc, posterSrc, profileSrc, tmdb } from '../lib/tmdb';
@@ -102,25 +104,25 @@ export default function DetailPage() {
             {m.poster ? <img className="td-poster" src={posterSrc(m.poster)} alt={m.title} /> : <div className="td-poster" />}
             <div className="td-btns">
               <Link className="btn primary" to={playTo}>
-                ▶ {resume ? (m.type === 'tv' && resume.season ? `Resume S${resume.season} E${resume.episode}` : 'Resume') : 'Play'}
+                <Icon name="play" size={16} fill />{resume ? (m.type === 'tv' && resume.season ? `Resume S${resume.season} E${resume.episode}` : 'Resume') : 'Play'}
               </Link>
-              {trailer && <button className="btn ghost" onClick={() => setShowTrailer(true)}>▶ Watch Trailer</button>}
+              {trailer && <button className="btn ghost" onClick={() => setShowTrailer(true)}><Icon name="video" size={16} />Watch Trailer</button>}
               <div className="td-row2">
-                <button className="btn ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ Watchlist' : '🔖 Watchlist'}</button>
-                <button className="btn ghost" aria-pressed={love} onClick={() => toggleLoved(m)}>{love ? '♥ Favorite' : '♡ Add Favorite'}</button>
+                <button className="btn ghost" onClick={() => toggleFavorite(m)}><Icon name={fav ? 'check' : 'bookmark'} size={16} />Watchlist</button>
+                <button className="btn ghost" aria-pressed={love} onClick={() => toggleLoved(m)}><Icon name="heart" size={16} fill={love} />{love ? 'Favorite' : 'Add Favorite'}</button>
               </div>
-              <button className="btn ghost" onClick={() => void share()}>Share</button>
+              <button className="btn ghost" onClick={() => void share()}><Icon name="share" size={16} />Share</button>
               {toast && <p className="muted small" role="status">{toast}</p>}
             </div>
           </div>
           <div className="td-info">
             <div className="td-chips">
               {m.rating > 0 && (
-                <span className="chip star">★ {m.rating.toFixed(1)}{d.votes > 0 && ` (${d.votes.toLocaleString()} votes)`}</span>
+                <span className="chip star"><Icon name="star" size={14} fill />{m.rating.toFixed(1)}{d.votes > 0 && <small>({votesShort(d.votes)})</small>}</span>
               )}
-              {d.status && <span className="chip stat">{d.status}</span>}
-              <span className="chip">{yearRange}</span>
-              {d.runtime > 0 && <span className="chip">{d.runtime} min</span>}
+              {d.status && <span className={`chip stat ${d.status === 'Released' || d.status === 'Ended' ? 'ok' : ''}`}>{d.status}</span>}
+              <span className="chip"><Icon name="calendar" size={14} />{yearRange}</span>
+              {d.runtime > 0 && <span className="chip"><Icon name="clock" size={14} />{d.runtime} min</span>}
             </div>
             <h1>{m.title}</h1>
             {d.tagline && <p className="tagline">“{d.tagline}”</p>}
@@ -166,11 +168,11 @@ export default function DetailPage() {
                   <span className="ep-tag">E{e.number}</span>
                 </span>
                 <span>
-                  {e.rating > 0 && <span className="ep-score">★ {e.rating.toFixed(1)}</span>}
+                  {e.rating > 0 && <span className="ep-score"><Icon name="star" size={12} fill />{e.rating.toFixed(1)}</span>}
                   <h4>{e.number}. {e.name}</h4>
                   <span className="ep-meta">
-                    {e.airDate && <span>📅 {e.airDate}</span>}
-                    {e.runtime > 0 && <span>⏱ {e.runtime} min</span>}
+                    {e.airDate && <span><Icon name="calendar" size={13} />{e.airDate}</span>}
+                    {e.runtime > 0 && <span><Icon name="clock" size={13} />{e.runtime} min</span>}
                   </span>
                   <p>{e.overview || 'No description available.'}</p>
                 </span>

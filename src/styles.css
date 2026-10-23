@@ -671,3 +671,47 @@ html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
 .contact-card small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
 .contact-card b { color: var(--accent); }
 .contact-card img, .contact-card svg { border-radius: 18px; flex: none; }
+
+/* ================= Icons + tidy info chips ================= */
+.ic { flex: none; display: inline-block; vertical-align: middle; }
+.btn .ic, .pill .ic { margin: 0; }
+.pill, .bb-pill, .ep-score, .ep-meta span, .ep-now, .stats span, .badge, .explore, .wp-resume, .hinfo small, .crumb .link, .fab-install, .prate, .pyear, .rrate, .genre-card small, .suggest-all {
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.pill { justify-content: center; gap: 7px; }
+.hinfo small { display: flex; }
+.prate, .rrate { gap: 4px; }
+.pyear { gap: 5px; }
+.explore { gap: 4px; }
+.explore .ic { transition: transform .15s ease; }
+.explore:hover .ic { transform: translateX(3px); }
+.x, .star, .fab-top, .modal-close, .modal-x, .rbtn { display: grid; place-items: center; padding: 0; }
+.rbtn .ic { margin: 0; }
+.star.on { color: #ffc857; }
+.auth-input .ic { color: var(--muted); }
+.suggest-item .ic { color: var(--muted); }
+
+/* Info chips (rating, year, status…) — one consistent look */
+.td-chips .chip, .wp-servers .chip {
+  display: inline-flex; align-items: center; gap: 6px; height: auto; min-height: 32px; padding: 6px 14px;
+  font-size: 13px; line-height: 1; white-space: nowrap; flex: none;
+  border: 1px solid rgba(255,233,214,.14); background: rgba(255,233,214,.07); color: var(--cream);
+}
+.td-chips .chip small { margin-left: 2px; font-size: 11px; font-weight: 700; opacity: .7; }
+.td-chips .chip.star { background: rgba(255,211,107,.14); border-color: rgba(255,211,107,.32); color: #ffd36b; }
+.td-chips .chip.stat, .wp-servers .chip.stat { background: rgba(255,107,87,.14); border-color: rgba(255,107,87,.35); color: var(--accent); }
+.td-chips .chip.stat.ok { background: rgba(61,220,151,.12); border-color: rgba(61,220,151,.32); color: var(--good); }
+.td-chips { gap: 8px; }
+.ep-score { gap: 4px; }
+.ep-row .ep-meta { flex-wrap: wrap; row-gap: 4px; }
+.bb-pill { gap: 6px; }
+.bb-pill small { margin-left: 2px; }
+
+/* Genre cards use line icons */
+.g-icon { color: var(--accent); }
+.g-big { filter: none; color: var(--accent); opacity: .1; line-height: 0; right: -18px; bottom: -18px; }
+
+/* Live dot */
+.live-dot { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: currentColor; animation: livepulse 1.6s ease-in-out infinite; }
+@keyframes livepulse { 50% { opacity: .35; } }
+.contact-card b { display: inline-flex; align-items: center; gap: 2px; }

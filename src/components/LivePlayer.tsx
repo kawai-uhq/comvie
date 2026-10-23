@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { countryName, flag } from '../lib/iptv';
 import type { Channel } from '../lib/iptv';
 import ChannelLogo from './ChannelLogo';
+import Icon from './Icon';
 
 interface Props {
   channel: Channel;
@@ -216,7 +217,7 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
         <div className="lp-info">
           <div className="lp-title">
             <strong>{channel.name}</strong>
-            <span className={`badge ${atLive ? 'live' : ''}`}>{atLive ? '● LIVE' : `-${fmt(behind)}`}</span>
+            <span className={`badge ${atLive ? 'live' : ''}`}>{atLive ? <><i className="live-dot" />LIVE</> : `-${fmt(behind)}`}</span>
             {channel.quality && <span className="badge">{channel.quality.toUpperCase()}</span>}
           </div>
           <small>{flag(channel.country)} {countryName(channel.country)} · {channel.categories[0] ?? 'general'}</small>
@@ -236,7 +237,7 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
             <p>This channel may be offline, restricted in your region, or not allowed to play on websites. Try the next channel.</p>
             <div className="actions center">
               <button className="btn small ghost" onClick={() => setAttempt((n) => n + 1)}>Retry</button>
-              <button className="btn small primary" onClick={onNext}>Next channel ›</button>
+              <button className="btn small primary" onClick={onNext}>Next channel<Icon name="chevronRight" size={14} /></button>
               <button className="btn small ghost" onClick={() => void copy()}>{copied ? 'Copied' : 'Copy stream link'}</button>
               <a className="btn small ghost" href={channel.url} target="_blank" rel="noopener noreferrer">Direct link</a>
             </div>
@@ -259,7 +260,7 @@ export default function LivePlayer({ channel, onNext, onPrev, fav, onToggleFav, 
           <button className="lp-icon" onClick={onPrev} aria-label="Previous channel"><Ico d={I.prev} /></button>
           <button className="lp-play" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play'}><Ico d={playing ? I.pause : I.play} /></button>
           <button className="lp-icon" onClick={onNext} aria-label="Next channel"><Ico d={I.next} /></button>
-          <button className="badge btn-badge" onClick={goLive} aria-label="Jump to live">{atLive ? '● LIVE' : `-${fmt(behind)}`}</button>
+          <button className="badge btn-badge" onClick={goLive} aria-label="Jump to live">{atLive ? <><i className="live-dot" />LIVE</> : `-${fmt(behind)}`}</button>
           <button className="lp-icon" onClick={() => { const el = video.current; if (el) el.muted = !el.muted; }} aria-label={muted ? 'Unmute' : 'Mute'}>
             <Ico d={muted || volume === 0 ? I.mute : I.vol} />
           </button>

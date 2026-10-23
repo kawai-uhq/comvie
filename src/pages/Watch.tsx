@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { PosterRow } from '../components/Rows';
+import Icon from '../components/Icon';
+import { votesShort } from '../lib/format';
 import { clearAt, clock, fractionOf, resumeAt, saveAt } from '../lib/progress';
 import { providerById, providers } from '../lib/providers';
 import { store } from '../lib/storage';
@@ -145,12 +147,12 @@ export default function Watch() {
   return (
     <div className="wp">
       <div className="wp-top">
-        <button className="btn small ghost" onClick={() => (window.history.length > 1 ? nav(-1) : nav(`/title/${t}/${mid}`))}>← Back</button>
+        <button className="btn small ghost" onClick={() => (window.history.length > 1 ? nav(-1) : nav(`/title/${t}/${mid}`))}><Icon name="arrowLeft" size={15} />Back</button>
         <span className="sp" />
         {m && (
           <>
-            <button className="btn small ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ In Watchlist' : '+ Watchlist'}</button>
-            <button className="btn small ghost" aria-label={love ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={love} onClick={() => toggleLoved(m)}>{love ? '♥' : '♡'}</button>
+            <button className="btn small ghost" onClick={() => toggleFavorite(m)}><Icon name={fav ? 'check' : 'bookmark'} size={15} />{fav ? 'In Watchlist' : 'Watchlist'}</button>
+            <button className="btn small ghost" aria-label={love ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={love} onClick={() => toggleLoved(m)}><Icon name="heart" size={17} fill={love} /></button>
           </>
         )}
       </div>
@@ -169,7 +171,7 @@ export default function Watch() {
         <div className="wp-slow" role="status">
           <span>{provider.name} is taking a while to load.</span>
           <button className="pill warn" onClick={() => setServer(nextServer.id)}>Try {nextServer.name}</button>
-          <button className="pill" onClick={() => setReload((n) => n + 1)}>↻ Reload</button>
+          <button className="pill" onClick={() => setReload((n) => n + 1)}><Icon name="refresh" size={14} />Reload</button>
         </div>
       )}
 
@@ -180,11 +182,11 @@ export default function Watch() {
             {p.name} <small>({p.quality})</small>
           </button>
         ))}
-        <button className="pill" onClick={() => setReload((n) => n + 1)}>↻ Reload</button>
+        <button className="pill" onClick={() => setReload((n) => n + 1)}><Icon name="refresh" size={14} />Reload</button>
         {t === 'tv' && <span className="chip stat wp-ep">Season {season} • Episode {episode}</span>}
       </div>
       {start > 0 && (
-        <p className="wp-resume">▶ Resumed from {clock(start)} — 5 seconds before where you stopped.</p>
+        <p className="wp-resume"><Icon name="play" size={12} fill /> Resumed from {clock(start)} — 5 seconds before where you stopped.</p>
       )}
       {protect && !provider.sandboxOk && (
         <p className="muted small" style={{ margin: '-4px 0 10px' }}>
@@ -196,10 +198,10 @@ export default function Watch() {
         <div className="wp-left">
           <div className="td-chips">
             {m && m.rating > 0 && (
-              <span className="chip star">★ {m.rating.toFixed(1)}{d && d.votes > 0 && ` (${d.votes >= 1000 ? `${(d.votes / 1000).toFixed(1)}k` : d.votes})`}</span>
+              <span className="chip star"><Icon name="star" size={14} fill />{m.rating.toFixed(1)}{d && d.votes > 0 && <small>({votesShort(d.votes)})</small>}</span>
             )}
-            {m?.year && <span className="chip">{m.year}</span>}
-            {d?.status && <span className="chip">{d.status}</span>}
+            {m?.year && <span className="chip"><Icon name="calendar" size={14} />{m.year}</span>}
+            {d?.status && <span className={`chip stat ${d.status === 'Released' || d.status === 'Ended' ? 'ok' : ''}`}>{d.status}</span>}
           </div>
           <h1>{m?.title ?? 'Loading…'}</h1>
           {epName && <p className="wp-epname">S{season} · E{episode} — {epName}</p>}
@@ -222,10 +224,10 @@ export default function Watch() {
                   }
                 }}
               >
-                ‹ Prev
+                <Icon name="chevronLeft" size={15} />Prev
               </button>
             )}
-            {next && <button className="btn small ghost" onClick={() => go(next.s, next.e)}>Next ›</button>}
+            {next && <button className="btn small ghost" onClick={() => go(next.s, next.e)}>Next<Icon name="chevronRight" size={15} /></button>}
             <Link to={`/title/${t}/${mid}`} className="btn small ghost">Details</Link>
           </div>
           <p className="watch-help" style={{ background: 'none', padding: '14px 0', textAlign: 'left' }}>
@@ -274,12 +276,12 @@ export default function Watch() {
                         {frac > 0.02 && <span className="ep-prog"><i style={{ width: `${Math.round(frac * 100)}%` }} /></span>}
                       </span>
                       <span>
-                        {e.rating > 0 && <span className="ep-score">★ {e.rating.toFixed(1)}</span>}
+                        {e.rating > 0 && <span className="ep-score"><Icon name="star" size={12} fill />{e.rating.toFixed(1)}</span>}
                         <h4>{e.number}. {e.name}</h4>
                         <span className="ep-meta">
-                          {e.airDate && <span>📅 {e.airDate}</span>}
-                          {e.runtime > 0 && <span>⏱ {e.runtime} min</span>}
-                          {now && <span className="ep-now">▶ Now playing</span>}
+                          {e.airDate && <span><Icon name="calendar" size={13} />{e.airDate}</span>}
+                          {e.runtime > 0 && <span><Icon name="clock" size={13} />{e.runtime} min</span>}
+                          {now && <span className="ep-now"><Icon name="play" size={11} fill />Now playing</span>}
                         </span>
                         <p>{e.overview || 'No description available.'}</p>
                       </span>

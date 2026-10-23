@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Status } from '../components/Rows';
+import Icon from '../components/Icon';
 import SearchBox from '../components/SearchBox';
 import Surprise from '../components/Surprise';
 import { posterSet, posterSrc, tmdb } from '../lib/tmdb';
@@ -15,7 +16,7 @@ function Card({ m }: { m: Media }) {
       <span className="rimg">
         {m.poster ? <img src={posterSrc(m.poster)} srcSet={posterSet(m.poster)} sizes="180px" alt="" loading="lazy" /> : null}
         <span className="rbadge">{m.type === 'tv' ? 'TV SERIES' : 'MOVIE'}</span>
-        {m.rating > 0 && <span className="rrate">★ {m.rating.toFixed(1)}</span>}
+        {m.rating > 0 && <span className="rrate"><Icon name="star" size={11} fill />{m.rating.toFixed(1)}</span>}
       </span>
       <strong>{m.title}</strong>
       <small>{m.year}</small>

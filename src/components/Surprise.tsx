@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Icon from './Icon';
 import { tmdb } from '../lib/tmdb';
 import type { MediaType } from '../lib/types';
 
@@ -24,7 +25,7 @@ export default function Surprise({ type, genre, className = 'btn small ghost' }:
 
   return (
     <button type="button" className={className} disabled={busy} onClick={() => void go()}>
-      {busy ? 'Picking…' : none ? 'Try again 🎲' : '🎲 Surprise me'}
+      {busy ? 'Picking…' : <><Icon name="shuffle" size={16} />{none ? 'Try again' : 'Surprise me'}</>}
     </button>
   );
 }

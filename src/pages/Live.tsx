@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ChannelLogo from '../components/ChannelLogo';
+import Icon from '../components/Icon';
 import LivePlayer from '../components/LivePlayer';
 import { Status } from '../components/Rows';
 import { countryName, flag, loadChannels } from '../lib/iptv';
@@ -143,10 +144,10 @@ export default function Live() {
           <h1 className="title">Live TV &amp; <span className="accent">World Channels</span></h1>
           <p className="muted">Free public broadcasts from around the world, from around the web. Some channels are offline or blocked in your region.</p>
           {all && !current && lastChannel && (
-            <button className="btn primary" onClick={() => play(lastChannel)}>▶ Resume {lastChannel.name}</button>
+            <button className="btn primary" onClick={() => play(lastChannel)}><Icon name="play" size={15} fill />Resume {lastChannel.name}</button>
           )}
-          {all && <p className="stats"><span>📺 {all.length.toLocaleString()} Channels</span><span>🌍 {countries.length}+ Countries</span><span>🛡️ Free &amp; Public Streams</span></p>}
-          {all && <button className="btn small ghost live-refresh" onClick={load}>↻ Refresh</button>}
+          {all && <p className="stats"><span><Icon name="tv" size={14} />{all.length.toLocaleString()} Channels</span><span><Icon name="globe" size={14} />{countries.length}+ Countries</span><span><Icon name="shield" size={14} />Free &amp; Public Streams</span></p>}
+          {all && <button className="btn small ghost live-refresh" onClick={load}><Icon name="refresh" size={14} />Refresh</button>}
         </section>
 
         {current && (
@@ -210,7 +211,7 @@ export default function Live() {
                   <div key={c.id} className={`channel ${current?.id === c.id ? 'on' : ''}`}>
                     <div className="channel-top">
                       <span>{flag(c.country)} {c.country || 'INT'}</span>
-                      <button className={`star ${favs.includes(c.id) ? 'on' : ''}`} aria-label={favs.includes(c.id) ? `Remove ${c.name} from favorites` : `Add ${c.name} to favorites`} aria-pressed={favs.includes(c.id)} onClick={() => toggleFav(c.id)}>★</button>
+                      <button className={`star ${favs.includes(c.id) ? 'on' : ''}`} aria-label={favs.includes(c.id) ? `Remove ${c.name} from favorites` : `Add ${c.name} to favorites`} aria-pressed={favs.includes(c.id)} onClick={() => toggleFav(c.id)}><Icon name="star" size={18} fill={favs.includes(c.id)} /></button>
                     </div>
                     <button className="channel-play" onClick={() => play(c)} aria-label={`Play ${c.name}`}>
                       <ChannelLogo name={c.name} logos={c.logos} />

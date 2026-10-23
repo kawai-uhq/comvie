@@ -1,3 +1,4 @@
+import Icon from '../components/Icon';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Grid, GridSkeleton, Status } from '../components/Rows';
@@ -47,7 +48,7 @@ export default function GenreResults() {
   return (
     <main className="page pad-top">
       <div className="container">
-        <p className="crumb"><Link to="/genres" className="link">‹ All genres</Link></p>
+        <p className="crumb"><Link to="/genres" className="link"><Icon name="chevronLeft" size={14} />All genres</Link></p>
         <h1 className="title">{genre?.name ?? 'Genre'} <span className="accent">{t === 'tv' ? 'Shows' : 'Movies'}</span></h1>
         {error ? (
           <Status kind="error" text={error} retry={() => load(page + 1)} />

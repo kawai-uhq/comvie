@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import Icon from './Icon';
 import { isSmooth } from '../lib/perf';
 import { IMG, posterSet, posterSrc, tmdb } from '../lib/tmdb';
 import { mediaKey, progressLabel } from '../lib/types';
@@ -17,9 +18,9 @@ export function Row({ title, children, to }: { title: string; children: ReactNod
       <div className="row-head">
         <h2><span className="bar" aria-hidden="true" />{title}</h2>
         <div className="row-ctrl">
-          {to && <Link to={to} className="explore">Explore All →</Link>}
-          <button className="rbtn" aria-label="Scroll left" onClick={() => scroll(-1)}>‹</button>
-          <button className="rbtn" aria-label="Scroll right" onClick={() => scroll(1)}>›</button>
+          {to && <Link to={to} className="explore">Explore All<Icon name="arrowRight" size={14} /></Link>}
+          <button className="rbtn" aria-label="Scroll left" onClick={() => scroll(-1)}><Icon name="chevronLeft" size={18} /></button>
+          <button className="rbtn" aria-label="Scroll right" onClick={() => scroll(1)}><Icon name="chevronRight" size={18} /></button>
         </div>
       </div>
       <div className="row-scroll" ref={ref}>{children}</div>
@@ -119,7 +120,7 @@ export function Poster({ m, rank, fresh }: { m: Media; rank?: number; fresh?: bo
         )}
         {fresh && <span className="pnew">NEW EP</span>}
         <span className={`pbadge ${m.type}`}>{m.type === 'tv' ? 'TV SERIES' : 'MOVIE'}</span>
-        <span className={`prate ${rateTone(m.rating)}`}>★ {m.rating.toFixed(1)}</span>
+        <span className={`prate ${rateTone(m.rating)}`}><Icon name="star" size={11} fill />{m.rating.toFixed(1)}</span>
       </span>
       {trailer && box && (
         <span className="hover-preview" style={box} aria-hidden="true">
@@ -133,7 +134,7 @@ export function Poster({ m, rank, fresh }: { m: Media; rank?: number; fresh?: bo
         </span>
       )}
       <span className="ptitle">{m.title}</span>
-      {m.year && <span className="pyear">📅 {m.year}</span>}
+      {m.year && <span className="pyear"><Icon name="calendar" size={12} />{m.year}</span>}
     </Link>
   );
 }
@@ -179,14 +180,14 @@ function ContinueCard({ w, onRemove }: { w: WatchEntry; onRemove: (key: string) 
       <Link to={to} className="continue-img" aria-label={`Resume ${m.title}`}>
         {img && <img src={img} alt="" loading="lazy" />}
         {fresh && <span className="new-badge">New episode</span>}
-        <span className="play-badge" aria-hidden="true">▶</span>
+        <span className="play-badge" aria-hidden="true"><Icon name="play" size={22} fill /></span>
       </Link>
       <div className="continue-meta">
         <div>
           <strong>{m.title}</strong>
           <small>{progressLabel(w)}</small>
         </div>
-        <button className="x" aria-label={`Remove ${m.title} from Continue Watching`} onClick={() => onRemove(mediaKey(m))}>✕</button>
+        <button className="x" aria-label={`Remove ${m.title} from Continue Watching`} onClick={() => onRemove(mediaKey(m))}><Icon name="x" size={14} /></button>
       </div>
     </div>
   );

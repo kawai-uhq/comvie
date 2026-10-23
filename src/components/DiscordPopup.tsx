@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { DISCORD_URL } from '../lib/links';
 import { store } from '../lib/storage';
 import DiscordIcon from './DiscordIcon';
+import Icon from './Icon';
 
 /** "Join our Discord" ad shown when the site opens, unless the visitor ticked "Don't show again". */
 export default function DiscordPopup() {
@@ -32,7 +33,7 @@ export default function DiscordPopup() {
   return (
     <div className="modal-back" onMouseDown={(e) => e.target === e.currentTarget && setOpen(false)}>
       <div className="modal dc-pop" role="dialog" aria-modal="true" aria-label="Join our Discord server">
-        <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}>✕</button>
+        <button className="modal-close" aria-label="Close" onClick={() => setOpen(false)}><Icon name="x" size={16} /></button>
         <div className="dc-art"><DiscordIcon size={64} /></div>
         <h2>Join our Discord</h2>
         <p className="muted">Hang out with the Comvie community — get updates, share feedback and report anything that isn't working.</p>

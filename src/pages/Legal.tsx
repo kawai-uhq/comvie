@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import Icon from '../components/Icon';
 
 const EMAIL = (import.meta.env.VITE_CONTACT_EMAIL as string | undefined)?.trim() ?? '';
 
@@ -15,7 +16,7 @@ function Page({ title, children }: { title: string; children: ReactNode }) {
   return (
     <main className="page pad-top">
       <div className="container narrow legal">
-        <p className="crumb"><Link to="/" className="link">‹ Home</Link></p>
+        <p className="crumb"><Link to="/" className="link"><Icon name="chevronLeft" size={14} />Home</Link></p>
         <h1 className="title">{title}</h1>
         {children}
         <p className="muted small">Last updated: October 2026.</p>

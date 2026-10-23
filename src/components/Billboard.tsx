@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Icon from './Icon';
+import { votesShort } from '../lib/format';
 import { IMG, backdropSet, backdropSrc, tmdb } from '../lib/tmdb';
 import { mediaKey } from '../lib/types';
 import type { Media } from '../lib/types';
@@ -7,7 +9,6 @@ import { useApp } from '../state';
 
 const SLIDE_MS = 7000;
 
-const votesLabel = (n?: number) => (!n ? '' : n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n));
 
 /** Rotating billboard: each trending title takes its turn every 7 seconds. */
 export default function Billboard({ items }: { items: Media[] }) {
@@ -91,9 +92,9 @@ export default function Billboard({ items }: { items: Media[] }) {
               <div className="bb-badges">
                 <span className="bb-kind">FEATURED {m.type === 'tv' ? 'TV SERIES' : 'MOVIE'}</span>
                 {m.rating > 0 && (
-                  <span className="bb-pill good">★ {m.rating.toFixed(1)}{m.votes ? <small>({votesLabel(m.votes)})</small> : null}</span>
+                  <span className="bb-pill good"><Icon name="star" size={13} fill />{m.rating.toFixed(1)}{m.votes ? <small>({votesShort(m.votes)})</small> : null}</span>
                 )}
-                {m.year && <span className="bb-pill">📅 {m.year}</span>}
+                {m.year && <span className="bb-pill"><Icon name="calendar" size={13} />{m.year}</span>}
               </div>
               {logo ? (
                 <>
@@ -105,10 +106,10 @@ export default function Billboard({ items }: { items: Media[] }) {
               )}
               <p className="billboard-overview">{m.overview}</p>
               <div className="actions">
-                <Link className="btn primary glow" to={playTo}>▶ {playLabel}</Link>
-                <Link className="btn ghost" to={`/title/${m.type}/${m.id}`}>ⓘ Info</Link>
-                <button className="btn ghost" onClick={() => toggleFavorite(m)}>{fav ? '✓ Watchlist' : '🔖 Watchlist'}</button>
-                <button className="btn ghost round" aria-label={love ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={love} onClick={() => toggleLoved(m)}>{love ? '♥' : '♡'}</button>
+                <Link className="btn primary glow" to={playTo}><Icon name="play" size={15} fill />{playLabel}</Link>
+                <Link className="btn ghost" to={`/title/${m.type}/${m.id}`}><Icon name="info" size={16} />Info</Link>
+                <button className="btn ghost" onClick={() => toggleFavorite(m)}><Icon name={fav ? 'check' : 'bookmark'} size={16} />Watchlist</button>
+                <button className="btn ghost round" aria-label={love ? 'Remove from favorites' : 'Add to favorites'} aria-pressed={love} onClick={() => toggleLoved(m)}><Icon name="heart" size={18} fill={love} /></button>
               </div>
             </div>
           </div>

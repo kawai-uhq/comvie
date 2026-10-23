@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Grid, Status } from '../components/Rows';
+import Icon from '../components/Icon';
 import { signInComingSoon } from '../lib/auth';
 import { useNewEpisodes } from '../lib/useNewEpisodes';
 import { mediaKey } from '../lib/types';
@@ -18,16 +19,16 @@ function HistoryRow({ w, onRemove }: { w: WatchEntry; onRemove: () => void }) {
   const to = `/watch/${m.type}/${m.id}?s=${w.season ?? 1}&e=${w.episode ?? 1}&p=${w.providerId}`;
   return (
     <div className="hrow">
-      <Link to={to} className="hplay" aria-label={`Resume ${m.title}`}>▶</Link>
+      <Link to={to} className="hplay" aria-label={`Resume ${m.title}`}><Icon name="play" size={18} fill /></Link>
       <div className="hinfo">
         <strong>
           {m.title}
           {tv ? <span className="htag">S{w.season} • E{w.episode}</span> : null}
         </strong>
-        <small>{m.type === 'tv' ? '📺 TV Series' : '🎬 Movie'} · {when(w.watchedAt)}</small>
+        <small><Icon name={m.type === 'tv' ? 'tv' : 'film'} size={13} />{m.type === 'tv' ? 'TV Series' : 'Movie'} · {when(w.watchedAt)}</small>
       </div>
-      <Link to={to} className="btn small primary hresume">▶ {tv ? `Resume S${w.season} E${w.episode}` : 'Resume'}</Link>
-      <button className="x" aria-label={`Remove ${m.title} from history`} onClick={onRemove}>🗑</button>
+      <Link to={to} className="btn small primary hresume"><Icon name="play" size={14} fill />{tv ? `Resume S${w.season} E${w.episode}` : 'Resume'}</Link>
+      <button className="x" aria-label={`Remove ${m.title} from history`} onClick={onRemove}><Icon name="trash" size={15} /></button>
     </div>
   );
 }
@@ -49,9 +50,9 @@ export default function MyList() {
 
         <div className="lib-tabs">
           <div className="pills" style={{ margin: 0, justifyContent: 'flex-start' }} role="tablist">
-            <button role="tab" aria-selected={tab === 'history'} className={`pill ${tab === 'history' ? 'on' : ''}`} onClick={() => setTab('history')}>🕘 History ({history.length})</button>
-            <button role="tab" aria-selected={tab === 'list'} className={`pill ${tab === 'list' ? 'on' : ''}`} onClick={() => setTab('list')}>🔖 Watchlist ({favorites.length})</button>
-            <button role="tab" aria-selected={tab === 'loved'} className={`pill ${tab === 'loved' ? 'on' : ''}`} onClick={() => setTab('loved')}>♡ Favorites ({loved.length})</button>
+            <button role="tab" aria-selected={tab === 'history'} className={`pill ${tab === 'history' ? 'on' : ''}`} onClick={() => setTab('history')}><Icon name="history" size={15} />History ({history.length})</button>
+            <button role="tab" aria-selected={tab === 'list'} className={`pill ${tab === 'list' ? 'on' : ''}`} onClick={() => setTab('list')}><Icon name="bookmark" size={15} />Watchlist ({favorites.length})</button>
+            <button role="tab" aria-selected={tab === 'loved'} className={`pill ${tab === 'loved' ? 'on' : ''}`} onClick={() => setTab('loved')}><Icon name="heart" size={15} />Favorites ({loved.length})</button>
           </div>
           {tab === 'history' && history.length > 0 && (
             <button
@@ -60,7 +61,7 @@ export default function MyList() {
                 if (window.confirm('Clear your whole watch history?')) history.forEach((w) => removeWatch(mediaKey(w.media)));
               }}
             >
-              🗑 Clear History
+              <Icon name="trash" size={15} />Clear History
             </button>
           )}
         </div>
