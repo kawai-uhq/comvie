@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 /**
- * Shows the official Discord logo when it's been added as /public/discord.svg;
+ * Shows the official Discord logo when it's been added as /public/discord.png;
  * until then, a plain chat-bubble stand-in so nothing looks broken.
  */
 export default function DiscordIcon({ size = 56 }: { size?: number }) {
@@ -14,6 +14,6 @@ export default function DiscordIcon({ size = 56 }: { size?: number }) {
       <circle cx="38" cy="29" r="3" fill="#5865f2" />
     </svg>
   ) : (
-    <img src="/discord.svg" width={size} height={size} alt="Discord" onError={() => setMissing(true)} />
+    <img src="/discord.png" width={size} height={size} alt="Discord" onError={() => setMissing(true)} />
   );
 }

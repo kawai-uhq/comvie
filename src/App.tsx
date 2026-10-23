@@ -54,7 +54,7 @@ export default function App() {
         <Route path="*" element={<Home />} />
       </Routes>
       </Suspense>
-      {!watching && <Footer />}
+      <Footer />
       {!watching && <Floating />}
       <AuthModal />
       <DiscordPopup />
