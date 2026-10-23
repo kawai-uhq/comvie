@@ -630,3 +630,43 @@ html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
 .recent-row { display: flex; align-items: center; }
 .recent-row .suggest-item { flex: 1; min-width: 0; }
 .recent-row .x { margin-right: 8px; width: 28px; height: 28px; flex: none; }
+
+/* ---- Player page: info + episodes like the title page ---- */
+.wp { max-width: 1240px; }
+.wp-main { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 32px; align-items: start; margin-top: 8px; }
+.wp-left h1 { font-size: clamp(26px, 4.5vw, 40px); margin: 14px 0 6px; }
+.wp-epname { margin: 0 0 6px; color: var(--cream); font-weight: 800; }
+.wp-tag { margin: 0 0 14px; color: var(--accent); font-style: italic; }
+.wp-h { margin: 22px 0 6px; font-size: 18px; }
+.wp-overview { margin: 0; color: var(--muted); line-height: 1.65; }
+.wp-side img { width: 100%; border-radius: 16px; display: block; }
+.wp-ep { margin-left: auto; }
+.wp-resume { margin: -6px 2px 12px; font-size: 13px; color: var(--muted); }
+.wp-slow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px; padding: 10px 14px; border-radius: 12px; background: rgba(255,107,87,.12); border: 1px solid rgba(255,107,87,.35); font-weight: 700; font-size: 14px; }
+.wp-eps { margin-top: 26px; }
+.wp-eps .season-head .section { margin: 0 0 4px; }
+.wp-eps .ep-sub { margin: 0; }
+.ep-row.now { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; background: rgba(255,107,87,.08); }
+.ep-now { color: var(--accent); font-weight: 800; }
+.ep-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(0,0,0,.55); }
+.ep-prog i { display: block; height: 100%; background: var(--accent); }
+@media (max-width: 900px) {
+  .wp-main { grid-template-columns: 1fr; }
+  .wp-side { order: -1; max-width: 200px; }
+}
+
+/* ---- Discord popup + contact ---- */
+.dc-pop { text-align: center; }
+.dc-art { display: grid; place-items: center; margin-top: 4px; }
+.dc-art img, .dc-art svg { border-radius: 18px; }
+.dc-pop h2 { margin: 16px 0 8px; }
+.dc-pop p { margin: 0 0 18px; line-height: 1.55; }
+.dc-join { display: flex; justify-content: center; width: 100%; background: #5865f2; color: #fff; }
+.dc-never { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; color: var(--muted); font-size: 14px; font-weight: 700; cursor: pointer; }
+.dc-never input { width: 18px; height: 18px; accent-color: var(--accent); }
+.dc-later { display: block; margin: 12px auto 0; }
+.contact-card { display: flex; align-items: center; gap: 16px; margin: 20px 0; padding: 18px 20px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); color: inherit; text-decoration: none; }
+.contact-card:hover { background: var(--surface2); }
+.contact-card span { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.contact-card small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+.contact-card b { color: var(--accent); }

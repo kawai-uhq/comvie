@@ -8,6 +8,7 @@ export default function Footer() {
         <Logo size={26} />
         <nav aria-label="Legal">
           <Link to="/about">About</Link>
+          <Link to="/contact">Contact</Link>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
           <Link to="/takedown">Takedown requests</Link>

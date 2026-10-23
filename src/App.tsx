@@ -7,6 +7,8 @@ const GenreResults = lazy(() => import('./pages/GenreResults'));
 const Genres = lazy(() => import('./pages/Genres'));
 const Explore = lazy(() => import('./pages/Explore'));
 import Tooltip from './components/Tooltip';
+import DiscordPopup from './components/DiscordPopup';
+import Contact from './pages/Contact';
 import Floating from './components/Floating';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -41,6 +43,7 @@ export default function App() {
         <Route path="/live" element={<Live />} />
         <Route path="/list" element={<MyList />} />
         <Route path="/person/:id" element={<PersonPage />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
@@ -54,6 +57,7 @@ export default function App() {
       {!watching && <Footer />}
       {!watching && <Floating />}
       <AuthModal />
+      <DiscordPopup />
       <Tooltip />
     </>
   );

@@ -20,6 +20,12 @@ function write(key: string, value: unknown) {
 
 export const MAX_HISTORY = 30;
 
+export interface Progress {
+  t: number;
+  d: number;
+  at: number;
+}
+
 export const store = {
   getFavorites: () => read<Media[]>('comvie.favorites', []),
   saveFavorites: (v: Media[]) => write('comvie.favorites', v),
@@ -29,6 +35,10 @@ export const store = {
   saveRecentSearches: (v: string[]) => write('comvie.recentsearch', v),
   getHistory: () => read<WatchEntry[]>('comvie.history', []),
   saveHistory: (v: WatchEntry[]) => write('comvie.history', v),
+  getProgress: () => read<Record<string, Progress>>('comvie.progress', {}),
+  saveProgress: (v: Record<string, Progress>) => write('comvie.progress', v),
+  getDiscordHide: () => read<boolean>('comvie.discordhide', false),
+  saveDiscordHide: (v: boolean) => write('comvie.discordhide', v ? true : null),
   getProvider: () => read<string>('comvie.provider', 'cinesrc'),
   saveProvider: (v: string) => write('comvie.provider', v),
   getProtect: () => read<boolean>('comvie.protect', true),
