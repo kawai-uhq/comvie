@@ -15,7 +15,6 @@ export default function Contact() {
           <DiscordIcon size={64} />
           <span>
             <strong>Comvie on Discord</strong>
-            <small>{DISCORD_URL.replace('https://', '')}</small>
           </span>
           <b>Join ›</b>
         </a>
