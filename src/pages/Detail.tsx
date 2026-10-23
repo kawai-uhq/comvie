@@ -118,7 +118,7 @@ export default function DetailPage() {
           <div className="td-info">
             <div className="td-chips">
               {m.rating > 0 && (
-                <span className="chip star"><Icon name="star" size={14} fill />{m.rating.toFixed(1)}{d.votes > 0 && <small>({votesShort(d.votes)})</small>}</span>
+                <span className="chip rate"><Icon name="star" size={14} fill />{m.rating.toFixed(1)}{d.votes > 0 && <small>({votesShort(d.votes)})</small>}</span>
               )}
               {d.status && <span className={`chip stat ${d.status === 'Released' || d.status === 'Ended' ? 'ok' : ''}`}>{d.status}</span>}
               <span className="chip"><Icon name="calendar" size={14} />{yearRange}</span>

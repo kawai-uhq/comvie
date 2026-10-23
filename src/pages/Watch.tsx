@@ -198,7 +198,7 @@ export default function Watch() {
         <div className="wp-left">
           <div className="td-chips">
             {m && m.rating > 0 && (
-              <span className="chip star"><Icon name="star" size={14} fill />{m.rating.toFixed(1)}{d && d.votes > 0 && <small>({votesShort(d.votes)})</small>}</span>
+              <span className="chip rate"><Icon name="star" size={14} fill />{m.rating.toFixed(1)}{d && d.votes > 0 && <small>({votesShort(d.votes)})</small>}</span>
             )}
             {m?.year && <span className="chip"><Icon name="calendar" size={14} />{m.year}</span>}
             {d?.status && <span className={`chip stat ${d.status === 'Released' || d.status === 'Ended' ? 'ok' : ''}`}>{d.status}</span>}
