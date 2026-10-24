@@ -3,31 +3,69 @@ import { Link } from 'react-router-dom';
 import Icon from '../components/Icon';
 
 const EMAIL = (import.meta.env.VITE_CONTACT_EMAIL as string | undefined)?.trim() ?? '';
+const UPDATED = 'October 24, 2026';
 
-function Contact() {
-  return EMAIL ? (
-    <a className="link" href={`mailto:${EMAIL}`}>{EMAIL}</a>
-  ) : (
-    <a className="link" href="https://github.com/kawai-uhq/comvie/issues" target="_blank" rel="noopener noreferrer">our GitHub issues page</a>
+function Reach() {
+  return (
+    <>
+      <Link className="link" to="/contact">our Contact page</Link>
+      {EMAIL && (
+        <>
+          {' '}or <a className="link" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+        </>
+      )}
+    </>
   );
 }
 
-function Page({ title, children }: { title: string; children: ReactNode }) {
+/** The shared row of links under every help / legal page */
+export function PolicyLinks() {
+  return (
+    <nav className="policy-links" aria-label="Help and legal">
+      <Link to="/help">Get help</Link>
+      <Link to="/legal/terms">Terms</Link>
+      <Link to="/legal/privacy">Privacy</Link>
+      <Link to="/legal/dmca">DMCA</Link>
+      <Link to="/contact">Contact</Link>
+    </nav>
+  );
+}
+
+function Page({ title, updated = true, children }: { title: string; updated?: boolean; children: ReactNode }) {
   return (
     <main className="page pad-top">
       <div className="container narrow legal">
         <p className="crumb"><Link to="/" className="link"><Icon name="chevronLeft" size={14} />Home</Link></p>
         <h1 className="title">{title}</h1>
+        {updated && <p className="muted small lupdated">Last updated: {UPDATED}</p>}
         {children}
-        <p className="muted small">Last updated: October 2026.</p>
+        <PolicyLinks />
       </div>
     </main>
   );
 }
 
+function Sec({ n, title, children }: { n: number; title: string; children: ReactNode }) {
+  return (
+    <section className="lsec">
+      <h2><span className="lnum">{n}</span>{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function Notice() {
+  return (
+    <p className="lnotice">
+      <Icon name="info" size={16} />
+      <span><b>Comvie does not host, upload, or store any files.</b> Titles are indexed automatically from public sources and third-party services, and Comvie only provides links.</span>
+    </p>
+  );
+}
+
 export function About() {
   return (
-    <Page title="About Comvie">
+    <Page title="About Comvie" updated={false}>
       <p>Comvie (comfy + movie) is a cosy place to browse trending movies, TV shows and anime, keep a list of what you want to watch, and pick up where you left off.</p>
       <h2>What Comvie is, and isn't</h2>
       <ul>
@@ -36,69 +74,86 @@ export function About() {
         <li>Live TV lists free, publicly available channels gathered from an open public directory. Channels can go offline or be blocked in your region at any time.</li>
       </ul>
       <h2>Contact</h2>
-      <p>Questions or feedback: <Contact />.</p>
+      <p>Questions or feedback: <Reach />.</p>
     </Page>
   );
 }
 
 export function Terms() {
   return (
-    <Page title="Terms of use">
-      <p>By using Comvie you agree to these terms. If you don't agree, please don't use the site.</p>
-      <h2>Using the site</h2>
-      <ul>
-        <li>Comvie is provided for personal, non-commercial use.</li>
-        <li>You are responsible for following the laws of your country, including copyright law, when you watch anything through a third-party player.</li>
-        <li>Don't try to break, overload or scrape the site, or use it to harm others.</li>
-      </ul>
-      <h2>Third-party content</h2>
-      <p>Players, channels, trailers and images come from outside services. Comvie doesn't control them, can't guarantee they work, and isn't responsible for what they show or how they behave, including ads or popups.</p>
-      <h2>No warranty</h2>
-      <p>Comvie is provided "as is", without promises that it will always be available, accurate or error-free. To the extent the law allows, we are not liable for losses from using the site.</p>
-      <h2>Accounts</h2>
-      <p>Accounts are optional. You are responsible for the email address you sign in with. We may suspend accounts that abuse the service.</p>
-      <h2>Changes</h2>
-      <p>We may update these terms. Continuing to use the site means you accept the updated terms.</p>
-      <h2>Contact</h2>
-      <p><Contact /></p>
+    <Page title="Terms of Service">
+      <Sec n={1} title="Nature of the Service">
+        <p><b>Comvie is an automated search and indexing tool.</b> It gathers titles, artwork and information from public sources and links to players run by third parties. Comvie does not host or control the videos you play, and it can't check whether content on a third-party server is licensed.</p>
+      </Sec>
+      <Sec n={2} title="Your responsibility">
+        <p>You use third-party content <b>at your own risk</b>, for personal, non-commercial entertainment. You are responsible for following the laws where you live, including copyright law. Comvie isn't liable for infringement, malware, popups or other harm that comes from third-party players or sites.</p>
+      </Sec>
+      <Sec n={3} title="Accounts">
+        <p>Accounts are optional. If you create one, keep your sign-in details safe and don't share them. We may suspend accounts that abuse the service, try to break or overload it, or try to reverse-engineer how it works.</p>
+      </Sec>
+      <Sec n={4} title="Intellectual property">
+        <p>Comvie's design, name, code and original assets belong to Comvie. Posters, backdrops, cast photos and descriptions belong to their owners and come from services such as TMDB. Nothing here gives you rights to them.</p>
+      </Sec>
+      <Sec n={5} title="No warranty">
+        <p>Comvie is provided "as is". We don't promise it will always be available, accurate or error-free, and, as far as the law allows, we aren't liable for losses from using it.</p>
+      </Sec>
+      <Sec n={6} title="Changes to these terms">
+        <p>We may update these terms at any time. If you keep using Comvie after a change, you accept the new terms.</p>
+      </Sec>
+      <Notice />
     </Page>
   );
 }
 
 export function Privacy() {
   return (
-    <Page title="Privacy">
-      <p>Comvie is built to collect as little as possible. We don't show ads and don't run our own analytics or trackers.</p>
-      <h2>Stored on your device</h2>
-      <p>Your Watchlist, Favorites, Continue Watching, favorite and recent channels, and settings are saved in your browser's local storage. Clearing your browser data removes them.</p>
-      <h2>If you sign in (optional)</h2>
-      <p>We store your email address and the lists above on our database provider, Supabase, so they follow you between devices. Sign-in uses a one-time code sent to your email, and there are no passwords. To delete your account and data, contact <Contact />.</p>
-      <h2>Outside services you connect to</h2>
-      <ul>
-        <li><strong>TMDB</strong> provides titles and pictures. Your browser loads images directly from TMDB's servers, so TMDB can see your IP address.</li>
-        <li><strong>Third-party players</strong> and <strong>YouTube</strong> (trailers, loaded in privacy-enhanced mode) run their own code and may set cookies or collect data under their own policies.</li>
-        <li><strong>The public channel directory</strong> and each TV channel's stream host are contacted when you use Live TV.</li>
-        <li><strong>Vercel</strong> hosts the site and keeps standard server logs.</li>
-      </ul>
-      <h2>Contact</h2>
-      <p><Contact /></p>
+    <Page title="Privacy Policy">
+      <p>Comvie is built to collect as little as possible. There are no ads, and we don't run our own analytics or trackers.</p>
+      <Sec n={1} title="Kept on your device">
+        <p>Your Watchlist, Favorites, watch history, playback positions, watched marks, reminders, recent searches, favorite channels and settings are saved in your browser's local storage on this device. Clearing your browser data removes them.</p>
+      </Sec>
+      <Sec n={2} title="If you create an account (optional)">
+        <p>We store your email address, your sign-in credentials (handled by our authentication provider, Supabase) and your Watchlist, Favorites and watch history, so they follow you between devices. To delete your account and its data, reach us through <Reach />.</p>
+      </Sec>
+      <Sec n={3} title="Outside services you connect to">
+        <ul>
+          <li><b>TMDB</b> provides titles and pictures. Your browser loads images straight from TMDB's servers, so TMDB can see your IP address.</li>
+          <li><b>Third-party players</b> and <b>YouTube</b> (trailers, in privacy-enhanced mode) run their own code and may set cookies or collect data under their own policies.</li>
+          <li><b>Live TV</b> contacts an open public channel directory and each channel's stream host.</li>
+          <li><b>Vercel</b> hosts Comvie and keeps standard server logs.</li>
+        </ul>
+      </Sec>
+      <Sec n={4} title="Your choices">
+        <p>You can use Comvie without an account, clear your local data from your browser at any time, and turn on popup protection in Settings to block popups from players that support it.</p>
+      </Sec>
+      <Sec n={5} title="Contact">
+        <p>Privacy questions: <Reach />.</p>
+      </Sec>
     </Page>
   );
 }
 
-export function Takedown() {
+export function Dmca() {
   return (
-    <Page title="Takedown requests">
-      <p>Comvie does not host or upload video. Playback comes from third-party players. We still take rights holders' concerns seriously.</p>
-      <h2>If you own rights to a title</h2>
-      <p>Contact <Contact /> with:</p>
-      <ul>
-        <li>Your name, company and contact details.</li>
-        <li>The work you own, and proof or a description of your rights.</li>
-        <li>The Comvie page address(es) involved.</li>
-        <li>A statement that you believe in good faith that the use is not authorised, and that your information is accurate.</li>
-      </ul>
-      <p>After review we will, where appropriate, disable playback for that title on Comvie. We can't remove content from the third-party players themselves, so please also contact the service that actually hosts the video.</p>
+    <Page title="DMCA Notice">
+      <p>Comvie is an automated search engine and metadata aggregator. It does not store, stream or upload video or copyrighted files on its own servers.</p>
+      <Sec n={1} title="Automated third-party indexing">
+        <p>Streams shown on Comvie come from unaffiliated third-party players. Comvie works like a directory that links to content already available on the public internet. Because the files live on other servers, Comvie can't delete them from the internet.</p>
+      </Sec>
+      <Sec n={2} title="Copyright infringement and removal">
+        <p>We respect intellectual property rights. If you're a copyright owner, or you act for one, and you believe a Comvie link or embedded player infringes your work, you can ask us to remove it. For valid requests we will disable playback for that title on Comvie.</p>
+        <p>Removing a link doesn't remove the file itself, which stays with whoever hosts it. To have it taken down completely, you also need to contact the hosting provider or server administrator.</p>
+      </Sec>
+      <Sec n={3} title="Submitting a notice">
+        <p>Send your notice through <Reach />. Please include:</p>
+        <ul>
+          <li>The exact Comvie page address where the link or player appears.</li>
+          <li>Details that identify the copyrighted work.</li>
+          <li>Proof that you own the rights or are allowed to act for the owner.</li>
+          <li>Your name and contact details, and a statement that you believe in good faith the use isn't authorised and that your information is accurate.</li>
+        </ul>
+      </Sec>
+      <Notice />
     </Page>
   );
 }

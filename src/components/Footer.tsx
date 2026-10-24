@@ -8,10 +8,11 @@ export default function Footer() {
         <Logo size={26} />
         <nav aria-label="Legal">
           <Link to="/about">About</Link>
+          <Link to="/help">Get help</Link>
+          <Link to="/legal/terms">Terms</Link>
+          <Link to="/legal/privacy">Privacy</Link>
+          <Link to="/legal/dmca">DMCA</Link>
           <Link to="/contact">Contact</Link>
-          <Link to="/terms">Terms</Link>
-          <Link to="/privacy">Privacy</Link>
-          <Link to="/takedown">Takedown requests</Link>
         </nav>
         <p>
           Comvie does not host any video. Movie and show information comes from TMDB; this product uses the TMDB API but is not endorsed or certified by TMDB.

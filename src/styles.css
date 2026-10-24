@@ -283,9 +283,6 @@ h1, h2, h3 { font-family: var(--display); margin: 0; }
 .slide.on { opacity: 1; visibility: visible; transition: opacity 0.9s ease, visibility 0s; z-index: 1; }
 .slide > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
 .dots { position: absolute; z-index: 3; right: var(--pad); bottom: 22px; display: flex; gap: 8px; }
-.dots button { width: 10px; height: 10px; padding: 0; border-radius: 999px; border: 0; background: rgba(255, 233, 214, 0.4); transition: width 0.25s, background 0.25s; position: relative; }
-.dots button::after { content: ''; position: absolute; inset: -17px -6px; }
-.dots button.on { width: 28px; background: var(--accent); }
 @media (max-width: 760px) { .slide > img { object-position: 60% 0; } .dots { bottom: 14px; } }
 
 /* Hover trailer on posters */
@@ -744,3 +741,62 @@ html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
 .nav-dot.inline { position: static; margin-left: 6px; }
 .head-tools { flex-wrap: wrap; }
 .ep-row p { padding-right: 40px; }
+
+
+/* ---- Home: ambient background that follows the billboard ---- */
+.home { position: relative; }
+.home > *:not(.ambient) { position: relative; z-index: 1; }
+.ambient { position: absolute !important; left: 0; right: 0; top: 0; height: 1600px; z-index: 0 !important; overflow: hidden; pointer-events: none; }
+.ambient img { position: absolute; inset: -80px; width: calc(100% + 160px); height: calc(100% + 160px); object-fit: cover; opacity: 0; transition: opacity 1.2s ease; filter: blur(46px) saturate(1.6) brightness(.55); }
+.ambient img.on { opacity: 1; }
+.ambient::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18,12,24,.1) 0, rgba(18,12,24,.5) 560px, var(--bg) 1600px); }
+.home .slide > img, .home .billboard-fade { -webkit-mask-image: linear-gradient(180deg, #000 68%, transparent 100%); mask-image: linear-gradient(180deg, #000 68%, transparent 100%); }
+.home .billboard-fade { background: linear-gradient(0deg, rgba(18,12,24,0) 0%, rgba(18,12,24,.22) 55%, rgba(18,12,24,.55)), linear-gradient(90deg, rgba(18,12,24,.85), transparent 65%); }
+
+/* ---- Billboard pager: round dots, a progress ring on the active one, nudging arrows ---- */
+.dots { align-items: center; gap: 10px; }
+.dots .dot { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 50%; background: rgba(255,233,214,.4); position: relative; transition: background .25s ease, transform .25s ease; }
+.dots .dot::after { content: ''; position: absolute; inset: -12px; }
+.dots .dot.on { background: var(--accent); transform: scale(1.2); }
+.dot-ring { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; transform: rotate(-90deg) scale(.83); pointer-events: none; overflow: visible; }
+.dot-ring circle { fill: none; stroke-width: 2.2; }
+.dot-ring .trk { stroke: rgba(255,233,214,.22); }
+.dot-ring .arc { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 69.12; stroke-dashoffset: 69.12; animation: dotring 7s linear forwards; }
+.billboard.paused .dot-ring .arc { animation-play-state: paused; }
+@keyframes dotring { to { stroke-dashoffset: 0; } }
+.dot-arrow { width: 32px; height: 32px; padding: 0; border-radius: 50%; border: 1px solid rgba(255,233,214,.22); background: rgba(18,12,24,.55); color: var(--cream); display: grid; place-items: center; position: relative; }
+.dot-arrow:hover { background: rgba(255,107,87,.25); border-color: rgba(255,107,87,.6); }
+.dot-arrow.next .ic { animation: nudge-r 1.8s ease-in-out infinite; }
+.dot-arrow.prev .ic { animation: nudge-l 1.8s ease-in-out infinite; }
+@keyframes nudge-r { 50% { transform: translateX(3px); } }
+@keyframes nudge-l { 50% { transform: translateX(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .dot-ring .arc { animation: none; stroke-dashoffset: 0; }
+  .dot-arrow .ic { animation: none !important; }
+  .ambient img { transition: none; }
+}
+
+/* ---- Help + legal pages ---- */
+.lupdated { margin: -4px 0 18px; }
+.lsec { margin-top: 22px; }
+.lsec h2 { display: flex; align-items: center; gap: 12px; font-size: 19px; margin: 0 0 8px; }
+.lnum { flex: none; width: 28px; height: 28px; border-radius: 9px; display: inline-grid; place-items: center; background: rgba(255,107,87,.16); color: var(--accent); font-size: 14px; font-weight: 900; }
+.lnotice { display: flex; gap: 10px; align-items: flex-start; margin: 26px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); line-height: 1.55; color: var(--muted); }
+.lnotice .ic { margin-top: 3px; color: var(--accent); }
+.lnotice b { color: var(--cream); }
+.policy-links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 34px 0 6px; padding-top: 18px; border-top: 1px solid var(--line); }
+.policy-links a { color: var(--muted); font-weight: 700; font-size: 14px; }
+.policy-links a:hover { color: var(--cream); }
+.help-search { display: flex; align-items: center; gap: 10px; margin: 18px 0 6px; padding: 0 16px; height: 50px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+.help-search:focus-within { border-color: var(--accent); }
+.help-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-weight: 600; }
+.help-group { margin-top: 26px; }
+.help-group h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.faq { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); margin-bottom: 8px; overflow: hidden; }
+.faq summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 16px; font-weight: 800; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary .ic { color: var(--muted); transition: transform .2s ease; }
+.faq[open] summary .ic { transform: rotate(180deg); color: var(--accent); }
+.faq[open] { border-color: rgba(255,107,87,.4); }
+.faq-a { padding: 0 16px 16px; color: var(--muted); line-height: 1.65; }
+.help-contact { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 30px; padding: 16px 18px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }

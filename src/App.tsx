@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import AuthModal from './components/AuthModal';
 import Navbar from './components/Navbar';
 const Detail = lazy(() => import('./pages/Detail'));
@@ -12,7 +12,8 @@ import Contact from './pages/Contact';
 import Floating from './components/Floating';
 import Footer from './components/Footer';
 import Home from './pages/Home';
-import { About, Privacy, Takedown, Terms } from './pages/Legal';
+import { About, Dmca, Privacy, Terms } from './pages/Legal';
+const Help = lazy(() => import('./pages/Help'));
 const Live = lazy(() => import('./pages/Live'));
 const PersonPage = lazy(() => import('./pages/Person'));
 const MyList = lazy(() => import('./pages/MyList'));
@@ -45,9 +46,13 @@ export default function App() {
         <Route path="/person/:id" element={<PersonPage />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/takedown" element={<Takedown />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/legal/terms" element={<Terms />} />
+        <Route path="/legal/privacy" element={<Privacy />} />
+        <Route path="/legal/dmca" element={<Dmca />} />
+        <Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
+        <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
+        <Route path="/takedown" element={<Navigate to="/legal/dmca" replace />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/title/:type/:id" element={<Detail />} />
         <Route path="/watch/:type/:id" element={<Watch />} />

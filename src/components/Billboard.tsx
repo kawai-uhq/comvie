@@ -11,7 +11,7 @@ const SLIDE_MS = 7000;
 
 
 /** Rotating billboard: each trending title takes its turn every 7 seconds. */
-export default function Billboard({ items }: { items: Media[] }) {
+export default function Billboard({ items, onActive }: { items: Media[]; onActive?: (index: number) => void }) {
   const { isFavorite, toggleFavorite, isLoved, toggleLoved, history } = useApp();
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -29,6 +29,10 @@ export default function Billboard({ items }: { items: Media[] }) {
   useEffect(() => {
     if (i >= count) setI(0);
   }, [count, i]);
+
+  useEffect(() => {
+    onActive?.(i);
+  }, [i, onActive]);
 
   // Fetch the title logo for the slide on screen and the next one
   useEffect(() => {
@@ -53,7 +57,7 @@ export default function Billboard({ items }: { items: Media[] }) {
 
   return (
     <section
-      className="billboard"
+      className={`billboard ${paused ? 'paused' : ''}`}
       aria-roledescription="carousel"
       aria-label="Featured titles"
       onMouseEnter={() => setPaused(true)}
@@ -117,16 +121,29 @@ export default function Billboard({ items }: { items: Media[] }) {
       })}
       {count > 1 && (
         <div className="dots" role="tablist" aria-label="Choose a featured title">
+          <button className="dot-arrow prev" aria-label="Previous title" onClick={() => setI((x) => (x - 1 + count) % count)}>
+            <Icon name="chevronLeft" size={16} />
+          </button>
           {items.map((m, n) => (
             <button
               key={mediaKey(m)}
               role="tab"
               aria-selected={n === i}
               aria-label={`Show ${m.title}`}
-              className={n === i ? 'on' : ''}
+              className={`dot ${n === i ? 'on' : ''}`}
               onClick={() => setI(n)}
-            />
+            >
+              {n === i && (
+                <svg key={i} className="dot-ring" viewBox="0 0 28 28" aria-hidden="true">
+                  <circle className="trk" cx="14" cy="14" r="11" />
+                  <circle className="arc" cx="14" cy="14" r="11" />
+                </svg>
+              )}
+            </button>
           ))}
+          <button className="dot-arrow next" aria-label="Next title" onClick={() => setI((x) => (x + 1) % count)}>
+            <Icon name="chevronRight" size={16} />
+          </button>
         </div>
       )}
     </section>

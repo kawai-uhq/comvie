@@ -41,11 +41,19 @@ const playerEvent = (ev: MessageEvent, hostOk: (host: string) => boolean): Playe
     return null;
   }
   if (!hostOk(host)) return null;
-  const m = ev.data;
-  if (!m || m.type !== 'PLAYER_EVENT' || !m.data) return null;
-  const e = m.data.event;
+  let m = ev.data;
+  if (typeof m === 'string') {
+    try {
+      m = JSON.parse(m);
+    } catch {
+      return null;
+    }
+  }
+  if (!m || m.type !== 'PLAYER_EVENT') return null;
+  const p = m.data && typeof m.data === 'object' ? m.data : m;
+  const e = p.event;
   if (e === 'ended') return { t: 0, d: 0, ended: true };
-  if (e === 'timeupdate' || e === 'pause' || e === 'seeked') return { t: num(m.data.currentTime), d: num(m.data.duration) };
+  if (e === 'timeupdate' || e === 'pause' || e === 'seeked') return { t: num(p.currentTime), d: num(p.duration) };
   return null;
 };
 
@@ -104,6 +112,16 @@ export const providers: Provider[] = [
     tv: (id, s, e, start = 0) =>
       `https://vidfast.vc/tv/${id}/${s}/${e}?autoPlay=true${start > 0 ? `&startAt=${start}` : ''}`,
     parse: (ev) => playerEvent(ev, (h) => h.startsWith('vidfast.') || h.includes('.vidfast.'))
+  },
+  {
+    id: 'vidy',
+    name: 'Server 4',
+    quality: 'HD',
+    sandboxOk: false,
+    movie: (id, start = 0) => `https://vidy.st/movie/${id}?color=ff6b57&autoplay=true${start > 0 ? `&progress=${start}` : ''}`,
+    tv: (id, s, e, start = 0) =>
+      `https://vidy.st/tv/${id}/${s}/${e}?color=ff6b57&autoplay=true${start > 0 ? `&progress=${start}` : ''}`,
+    parse: (ev) => playerEvent(ev, (h) => h === 'vidy.st' || h.endsWith('.vidy.st'))
   }
 ];
 

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import Ambient from '../components/Ambient';
 import Billboard from '../components/Billboard';
 import FeedRow from '../components/FeedRow';
 import { ContinueRow, HomeSkeleton, PosterRow, Status } from '../components/Rows';
@@ -29,6 +30,8 @@ export default function Home() {
   const fresh = useNewEpisodes();
   const [trending, setTrending] = useState<Media[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [active, setActive] = useState(0);
+  const onActive = useCallback((n: number) => setActive(n), []);
 
   const load = () => {
     setError(null);
@@ -44,7 +47,8 @@ export default function Home() {
 
   return (
     <main className="page home">
-      <Billboard items={heroes} />
+      <Ambient items={heroes} active={active} />
+      <Billboard items={heroes} onActive={onActive} />
       <ContinueRow items={history} onRemove={removeWatch} />
       <PosterRow title="My Watchlist" items={favorites} to="/list" fresh={fresh} />
       <PosterRow title="My Favorites" items={loved} to="/list" fresh={fresh} />

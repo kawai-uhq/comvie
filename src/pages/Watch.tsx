@@ -212,7 +212,7 @@ export default function Watch() {
         className="wp-frame"
         src={src}
         title={m?.title ?? 'Player'}
-        allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+        allow="autoplay *; fullscreen *; picture-in-picture; encrypted-media *"
         allowFullScreen
         sandbox={sandbox}
       />

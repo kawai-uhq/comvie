@@ -24,7 +24,7 @@ export default function Contact() {
             Prefer email? <a className="link" href={`mailto:${EMAIL}`}>{EMAIL}</a>
           </p>
         )}
-        <p className="muted small">For copyright or takedown requests, please use the <Link to="/takedown" className="link">takedown page</Link>.</p>
+        <p className="muted small">For copyright or takedown requests, please use the <Link to="/legal/dmca" className="link">DMCA page</Link>.</p>
       </div>
     </main>
   );

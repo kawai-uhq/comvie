@@ -13,6 +13,7 @@ const P = {
   x: '<path d="M18 6 6 18M6 6l12 12"/>',
   trash: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>',
   chevronLeft: '<path d="m15 18-6-6 6-6"/>',
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
   chevronRight: '<path d="m9 18 6-6-6-6"/>',
   arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>',
   arrowLeft: '<path d="M19 12H5M12 19l-7-7 7-7"/>',
