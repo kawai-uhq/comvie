@@ -31,7 +31,7 @@ export default function App() {
 
   return (
     <>
-      {!watching && <Navbar />}
+      <Navbar />
       <Suspense fallback={<div className="status" style={{ minHeight: '70vh' }}><div className="spinner" aria-label="Loading" /></div>}>
       <Routes>
         <Route path="/" element={<Home />} />

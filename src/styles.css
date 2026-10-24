@@ -803,3 +803,4 @@ html.has-ambient body { background: transparent; }
 .faq[open] { border-color: rgba(255,107,87,.4); }
 .faq-a { padding: 0 16px 16px; color: var(--muted); line-height: 1.65; }
 .help-contact { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 30px; padding: 16px 18px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.wp { padding-top: calc(var(--nav-h) + 24px); }
