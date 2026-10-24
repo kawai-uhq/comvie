@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       ? `https://image.tmdb.org/t/p/w780${j.backdrop_path}`
       : j.poster_path
         ? `https://image.tmdb.org/t/p/w500${j.poster_path}`
-        : `${origin}/og.png?v=3`;
+        : `${origin}/og.png?v=4`;
     const url = `${origin}/title/${type}/${id}`;
 
     const tags = [
