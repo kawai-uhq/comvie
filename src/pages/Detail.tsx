@@ -4,6 +4,9 @@ import Icon from '../components/Icon';
 import { votesShort } from '../lib/format';
 import { DetailSkeleton, PosterRow, Row, Status } from '../components/Rows';
 import TrailerModal from '../components/TrailerModal';
+import WatchedTick from '../components/WatchedTick';
+import { isWatched, setWatched } from '../lib/progress';
+import { toggleReminder, useReminders } from '../lib/reminders';
 import { IMG, backdropSrc, posterSrc, profileSrc, tmdb } from '../lib/tmdb';
 import { mediaKey } from '../lib/types';
 import type { CastMember, Details, Episode, Media, MediaType } from '../lib/types';
@@ -18,6 +21,8 @@ export default function DetailPage() {
   const mid = Number(id);
   const { isFavorite, toggleFavorite, isLoved, toggleLoved, history } = useApp();
 
+  const rem = useReminders();
+  const [wv, setWv] = useState(0);
   const [d, setD] = useState<Details | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [season, setSeason] = useState(1);
@@ -81,6 +86,9 @@ export default function DetailPage() {
   const yearRange =
     m.type === 'tv' && y1 ? (d.status === 'Ended' || d.status === 'Canceled' ? (y2 && y2 !== y1 ? `${y1} - ${y2}` : y1) : `${y1} - Present`) : y1;
 
+  const upcoming = !!d.firstAir && d.firstAir > new Date().toISOString().slice(0, 10);
+  void wv;
+
   const share = async () => {
     const url = window.location.href;
     try {
@@ -111,6 +119,11 @@ export default function DetailPage() {
                 <button className="btn ghost" onClick={() => toggleFavorite(m)}><Icon name={fav ? 'check' : 'bookmark'} size={16} />Watchlist</button>
                 <button className="btn ghost" aria-pressed={love} onClick={() => toggleLoved(m)}><Icon name="heart" size={16} fill={love} />{love ? 'Favorite' : 'Add Favorite'}</button>
               </div>
+              {upcoming && (
+                <button className="btn ghost" aria-pressed={rem.has(m)} onClick={() => toggleReminder(m, d.firstAir)}>
+                  <Icon name="bell" size={16} fill={rem.has(m)} />{rem.has(m) ? 'Reminder set' : 'Remind me'}
+                </button>
+              )}
               <button className="btn ghost" onClick={() => void share()}><Icon name="share" size={16} />Share</button>
               {toast && <p className="muted small" role="status">{toast}</p>}
             </div>
@@ -162,12 +175,19 @@ export default function DetailPage() {
           <p className="ep-sub">Select a season to view detailed episode list</p>
           <div className="ep-list">
             {eps.map((e) => (
-              <Link key={e.number} className="ep-row" to={`/watch/tv/${m.id}?s=${season}&e=${e.number}`}>
+              <Link key={e.number} className={`ep-row ${isWatched('tv', m.id, season, e.number) ? 'seen' : ''}`} to={`/watch/tv/${m.id}?s=${season}&e=${e.number}`}>
                 <span className="ep-img">
                   {e.still ? <img src={IMG.still + e.still} alt="" loading="lazy" /> : null}
                   <span className="ep-tag">E{e.number}</span>
                 </span>
                 <span>
+                  <WatchedTick
+                    on={isWatched('tv', m.id, season, e.number)}
+                    onToggle={() => {
+                      setWatched('tv', m.id, season, e.number, !isWatched('tv', m.id, season, e.number));
+                      setWv((n) => n + 1);
+                    }}
+                  />
                   {e.rating > 0 && <span className="ep-score"><Icon name="star" size={12} fill />{e.rating.toFixed(1)}</span>}
                   <h4>{e.number}. {e.name}</h4>
                   <span className="ep-meta">

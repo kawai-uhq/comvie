@@ -7,6 +7,12 @@ export interface PlayerTick {
   ended?: boolean;
 }
 
+/** Playback options a server can honour */
+export interface PlayOpts {
+  autonext?: boolean;
+  autoskip?: boolean;
+}
+
 export interface Provider {
   id: string;
   name: string;
@@ -14,8 +20,12 @@ export interface Provider {
   /** Works inside a sandboxed frame (popup protection). Some servers refuse to play when sandboxed. */
   sandboxOk: boolean;
   /** `start` = seconds to begin from (0 = from the beginning) */
-  movie: (id: number, start?: number) => string;
-  tv: (id: number, season: number, episode: number, start?: number) => string;
+  movie: (id: number, start?: number, o?: PlayOpts) => string;
+  tv: (id: number, season: number, episode: number, start?: number, o?: PlayOpts) => string;
+  /** The server plays the next episode itself (auto-next) — no need for our own countdown */
+  handlesNext?: boolean;
+  /** The player moved to another episode on its own */
+  parseNext?: (ev: MessageEvent) => { s: number; e: number } | null;
   /** Reads a progress message posted by this server's player, or null if the message isn't one. */
   parse: (ev: MessageEvent) => PlayerTick | null;
 }
@@ -39,16 +49,31 @@ const playerEvent = (ev: MessageEvent, hostOk: (host: string) => boolean): Playe
   return null;
 };
 
+const cineQuery = (start: number, o: PlayOpts, first: '?' | '&') => {
+  const q: string[] = [];
+  if (start > 0) q.push(`t=${start}`, 'continueprompt=false');
+  if (o.autonext !== undefined) q.push(`autonext=${o.autonext}`);
+  if (o.autoskip !== undefined) q.push(`autoskip=${o.autoskip}`);
+  return q.length ? first + q.join('&') : '';
+};
+
 export const providers: Provider[] = [
   {
     id: 'cinesrc',
     name: 'Server 1',
     quality: '1080p Ultra',
     sandboxOk: true,
-    movie: (id, start = 0) =>
-      `https://cinesrc.st/embed/movie/${id}${start > 0 ? `?t=${start}&continueprompt=false` : ''}`,
-    tv: (id, s, e, start = 0) =>
-      `https://cinesrc.st/embed/tv/${id}?s=${s}&e=${e}${start > 0 ? `&t=${start}&continueprompt=false` : ''}`,
+    handlesNext: true,
+    movie: (id, start = 0, o = {}) => `https://cinesrc.st/embed/movie/${id}${cineQuery(start, o, '?')}`,
+    tv: (id, s, e, start = 0, o = {}) => `https://cinesrc.st/embed/tv/${id}?s=${s}&e=${e}${cineQuery(start, o, '&')}`,
+    parseNext: (ev) => {
+      if (ev.origin !== 'https://cinesrc.st') return null;
+      const m = ev.data;
+      if (!m || m.type !== 'cinesrc:nextepisode' || !m.internalNavigation) return null;
+      const s = num(m.season);
+      const e = num(m.episode);
+      return s > 0 && e > 0 ? { s, e } : null;
+    },
     parse: (ev) => {
       if (ev.origin !== 'https://cinesrc.st') return null;
       const m = ev.data;

@@ -1,14 +1,20 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Grid, Status } from '../components/Rows';
 import Icon from '../components/Icon';
 import { signInComingSoon } from '../lib/auth';
+import { fetchReplies } from '../lib/report';
+import type { ReportReply } from '../lib/report';
+import { dropReminder, useReminders } from '../lib/reminders';
+import { store } from '../lib/storage';
+import type { SentReport } from '../lib/storage';
 import { useNewEpisodes } from '../lib/useNewEpisodes';
 import { mediaKey } from '../lib/types';
 import type { WatchEntry } from '../lib/types';
 import { useApp } from '../state';
 
-type Tab = 'history' | 'list' | 'loved';
+type Tab = 'history' | 'list' | 'loved' | 'reminders' | 'reports';
+const TABS: Tab[] = ['history', 'list', 'loved', 'reminders', 'reports'];
 
 const when = (t: number) =>
   new Date(t).toLocaleString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -33,10 +39,79 @@ function HistoryRow({ w, onRemove }: { w: WatchEntry; onRemove: () => void }) {
   );
 }
 
+function daysUntil(date: string) {
+  return Math.ceil((new Date(date + 'T00:00:00').getTime() - Date.now()) / 86_400_000);
+}
+
+function RemindersPanel() {
+  const { list } = useReminders();
+  if (!list.length) return <Status kind="empty" text="No reminders yet. Open an upcoming title and tap “Remind me” — it shows up here (and as a dot on Library) when it's released." />;
+  return (
+    <div className="hlist">
+      {list.map((r) => {
+        const n = daysUntil(r.date);
+        const out = n <= 0;
+        return (
+          <div className="hrow" key={`${r.media.type}:${r.media.id}`}>
+            <Link to={`/title/${r.media.type}/${r.media.id}`} className="hplay" aria-label={`Open ${r.media.title}`}><Icon name={out ? 'play' : 'bell'} size={18} fill={out} /></Link>
+            <div className="hinfo">
+              <strong>{r.media.title}</strong>
+              <small><Icon name="calendar" size={13} />{new Date(r.date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })} · {out ? 'Out now' : n === 1 ? 'Tomorrow' : `In ${n} days`}</small>
+            </div>
+            <Link to={`/title/${r.media.type}/${r.media.id}`} className={`btn small ${out ? 'primary' : 'ghost'} hresume`}>{out ? 'Watch now' : 'Details'}</Link>
+            <button className="x" aria-label={`Remove reminder for ${r.media.title}`} onClick={() => dropReminder(r.media)}><Icon name="trash" size={15} /></button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function ReportsPanel() {
+  const reports: SentReport[] = store.getReports();
+  const [replies, setReplies] = useState<Record<string, ReportReply[] | null>>({});
+  useEffect(() => {
+    let live = true;
+    reports.slice(0, 10).forEach((r) => {
+      if (!r.ref) return;
+      void fetchReplies(r.ref).then((x) => live && setReplies((cur) => ({ ...cur, [r.id]: x })));
+    });
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  if (!reports.length) return <Status kind="empty" text="You haven't reported anything. Use “Report a problem” on the player page if a server isn't working." />;
+  return (
+    <div className="hlist">
+      {reports.map((r) => {
+        const rep = replies[r.id];
+        return (
+          <div className="report-row" key={r.id}>
+            <div className="report-head">
+              <strong>{r.title}</strong>
+              <small>#{r.id} · {when(r.at)}</small>
+            </div>
+            {rep && rep.length > 0 ? (
+              rep.map((x, i) => (
+                <p className="report-reply" key={i}><b>Team reply</b>{x.text}</p>
+              ))
+            ) : (
+              <p className="muted small">{r.ref ? 'Waiting for a reply from the team…' : 'Sent to the team.'}</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function MyList() {
   const { favorites, loved, history, removeWatch, session, openAuth } = useApp();
   const fresh = useNewEpisodes();
-  const [tab, setTab] = useState<Tab>('history');
+  const [qs] = useSearchParams();
+  const [tab, setTab] = useState<Tab>(() => (TABS.includes(qs.get('tab') as Tab) ? (qs.get('tab') as Tab) : 'history'));
+  const { due } = useReminders();
 
   return (
     <main className="page pad-top">
@@ -53,6 +128,8 @@ export default function MyList() {
             <button role="tab" aria-selected={tab === 'history'} className={`pill ${tab === 'history' ? 'on' : ''}`} onClick={() => setTab('history')}><Icon name="history" size={15} />History ({history.length})</button>
             <button role="tab" aria-selected={tab === 'list'} className={`pill ${tab === 'list' ? 'on' : ''}`} onClick={() => setTab('list')}><Icon name="bookmark" size={15} />Watchlist ({favorites.length})</button>
             <button role="tab" aria-selected={tab === 'loved'} className={`pill ${tab === 'loved' ? 'on' : ''}`} onClick={() => setTab('loved')}><Icon name="heart" size={15} />Favorites ({loved.length})</button>
+            <button role="tab" aria-selected={tab === 'reminders'} className={`pill ${tab === 'reminders' ? 'on' : ''}`} onClick={() => setTab('reminders')}><Icon name="bell" size={15} />Reminders{due > 0 && <i className="nav-dot inline" />}</button>
+            <button role="tab" aria-selected={tab === 'reports'} className={`pill ${tab === 'reports' ? 'on' : ''}`} onClick={() => setTab('reports')}><Icon name="alert" size={15} />Reports</button>
           </div>
           {tab === 'history' && history.length > 0 && (
             <button
@@ -82,6 +159,10 @@ export default function MyList() {
           ) : (
             <Grid items={favorites} fresh={fresh} />
           )
+        ) : tab === 'reminders' ? (
+          <RemindersPanel />
+        ) : tab === 'reports' ? (
+          <ReportsPanel />
         ) : loved.length === 0 ? (
           <Status kind="empty" text="No favorites yet. Tap the heart on titles you love." />
         ) : (

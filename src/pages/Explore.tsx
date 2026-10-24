@@ -28,36 +28,62 @@ const TABS: Record<MediaType, { feed: string; label: string }[]> = {
 type Sort = 'pop' | 'rated' | 'new';
 const today = () => new Date().toISOString().slice(0, 10);
 
+const LANGS: [string, string][] = [
+  ['en', 'English'], ['hi', 'Hindi'], ['ja', 'Japanese'], ['ko', 'Korean'], ['es', 'Spanish'], ['fr', 'French'],
+  ['de', 'German'], ['it', 'Italian'], ['zh', 'Chinese'], ['ta', 'Tamil'], ['te', 'Telugu'], ['ml', 'Malayalam'],
+  ['pt', 'Portuguese'], ['ru', 'Russian'], ['tr', 'Turkish'], ['th', 'Thai']
+];
+const RATINGS = [6, 7, 8];
+
+/** "2024", "2020s" etc. -> [from, to] dates */
+const yearRange = (y: string): [string, string] | null => {
+  if (!y) return null;
+  if (y === 'old') return ['1900-01-01', '1989-12-31'];
+  if (y.endsWith('s')) {
+    const d = Number(y.slice(0, 4));
+    return [`${d}-01-01`, `${d + 9}-12-31`];
+  }
+  return [`${y}-01-01`, `${y}-12-31`];
+};
+const YEARS = Array.from({ length: 30 }, (_, i) => String(new Date().getFullYear() + 1 - i));
+
 /** The Movies and TV Shows pages (with tabs, genre and sort), or a plain full list for /explore/:feed. */
 export default function Explore({ kind }: { kind?: MediaType }) {
   const params = useParams();
   const [tab, setTab] = useState(kind ? TABS[kind][0].feed : params.feed ?? '');
   const [genre, setGenre] = useState('');
   const [sort, setSort] = useState<Sort>('pop');
+  const [year, setYear] = useState('');
+  const [minRating, setMinRating] = useState('');
+  const [lang, setLang] = useState('');
+  const filtered = year !== '' || minRating !== '' || lang !== '';
 
   // /explore/:feed changes with the address
   useEffect(() => {
     if (!kind) setTab(params.feed ?? '');
   }, [kind, params.feed]);
 
-  const custom = !!kind && (genre !== '' || sort !== 'pop');
+  const custom = !!kind && (genre !== '' || sort !== 'pop' || filtered);
   const def = FEEDS[tab];
 
   const { path, type } = useMemo(() => {
     if (kind && custom) {
       const k = kind;
-      const order =
-        sort === 'rated'
-          ? 'vote_average.desc&vote_count.gte=300'
-          : sort === 'new'
-            ? k === 'movie'
-              ? `primary_release_date.desc&primary_release_date.lte=${today()}&vote_count.gte=20`
-              : `first_air_date.desc&first_air_date.lte=${today()}&vote_count.gte=10`
-            : 'popularity.desc';
-      return { path: `/discover/${k}?sort_by=${order}${genre ? `&with_genres=${genre}` : ''}`, type: k as 'all' | MediaType };
+      const dateKey = k === 'movie' ? 'primary_release_date' : 'first_air_date';
+      const q: string[] = [];
+      const range = yearRange(year);
+      const voteFloor = sort === 'rated' || minRating ? 300 : sort === 'new' ? (k === 'movie' ? 20 : 10) : 0;
+      q.push(`sort_by=${sort === 'rated' ? 'vote_average.desc' : sort === 'new' ? `${dateKey}.desc` : 'popularity.desc'}`);
+      if (genre) q.push(`with_genres=${genre}`);
+      if (range) q.push(`${dateKey}.gte=${range[0]}`, `${dateKey}.lte=${sort === 'new' && range[1] > today() ? today() : range[1]}`);
+      else if (sort === 'new') q.push(`${dateKey}.lte=${today()}`);
+      if (minRating) q.push(`vote_average.gte=${minRating}`);
+      if (lang) q.push(`with_original_language=${lang}`);
+      if (voteFloor) q.push(`vote_count.gte=${minRating ? Math.min(voteFloor, 150) : voteFloor}`);
+      return { path: `/discover/${k}?${q.join('&')}`, type: k as 'all' | MediaType };
     }
     return { path: def?.path ?? '', type: (def?.type ?? 'all') as 'all' | MediaType };
-  }, [kind, custom, sort, genre, def]);
+  }, [kind, custom, sort, genre, year, minRating, lang, def]);
 
   const [items, setItems] = useState<Media[]>([]);
   const [page, setPage] = useState(1);
@@ -136,6 +162,27 @@ export default function Explore({ kind }: { kind?: MediaType }) {
                 <option value="rated">Top Rated</option>
                 <option value="new">Newest</option>
               </select>
+              <select className="field select dd" value={year} onChange={(e) => setYear(e.target.value)} aria-label="Year">
+                <option value="">Any Year</option>
+                {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+                <option value="2010s">2010s</option>
+                <option value="2000s">2000s</option>
+                <option value="1990s">1990s</option>
+                <option value="old">Before 1990</option>
+              </select>
+              <select className="field select dd" value={minRating} onChange={(e) => setMinRating(e.target.value)} aria-label="Minimum rating">
+                <option value="">Any Rating</option>
+                {RATINGS.map((r) => <option key={r} value={r}>{r}+ rating</option>)}
+              </select>
+              <select className="field select dd" value={lang} onChange={(e) => setLang(e.target.value)} aria-label="Language">
+                <option value="">Any Language</option>
+                {LANGS.map(([c, n]) => <option key={c} value={c}>{n}</option>)}
+              </select>
+              {custom && (
+                <button className="btn small ghost" onClick={() => { setGenre(''); setSort('pop'); setYear(''); setMinRating(''); setLang(''); }}>
+                  <Icon name="x" size={14} />Reset
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -152,6 +199,9 @@ export default function Explore({ kind }: { kind?: MediaType }) {
                   setTab(t.feed);
                   setGenre('');
                   setSort('pop');
+                  setYear('');
+                  setMinRating('');
+                  setLang('');
                 }}
               >
                 {t.label}

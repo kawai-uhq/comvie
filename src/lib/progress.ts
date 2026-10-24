@@ -43,3 +43,24 @@ export const clock = (sec: number) => {
   const r = String(s % 60).padStart(2, '0');
   return h ? `${h}:${String(m).padStart(2, '0')}:${r}` : `${m}:${r}`;
 };
+
+// ---- Watched marks ----
+export const isWatched = (t: MediaType, id: number, s: number, e: number) => !!store.getWatched()[key(t, id, s, e)];
+
+export function setWatched(t: MediaType, id: number, s: number, e: number, on: boolean) {
+  const all = store.getWatched();
+  const k = key(t, id, s, e);
+  if (on) all[k] = Date.now();
+  else delete all[k];
+  store.saveWatched(all);
+}
+
+export function setSeasonWatched(id: number, s: number, episodes: number[], on: boolean) {
+  const all = store.getWatched();
+  for (const e of episodes) {
+    const k = key('tv', id, s, e);
+    if (on) all[k] = all[k] ?? Date.now();
+    else delete all[k];
+  }
+  store.saveWatched(all);
+}

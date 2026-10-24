@@ -729,3 +729,28 @@ html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
 .studios .chip { min-height: 34px; padding: 7px 14px; font-size: 13px; }
 .studios { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip.rate .ic, .bb-pill .ic, .prate .ic, .rrate .ic, .ep-score .ic { margin-top: -1px; }
+
+/* ---- Autoplay countdown, watched ticks, reports, reminders ---- */
+.wp-upnext { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px; padding: 12px 14px; border-radius: 12px; background: rgba(61,220,151,.1); border: 1px solid rgba(61,220,151,.3); font-weight: 700; font-size: 14px; }
+.wp-upnext > span { flex: 1; min-width: 160px; display: inline-flex; align-items: center; gap: 6px; }
+.ep-check { position: absolute; right: 14px; bottom: 14px; z-index: 2; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line); background: rgba(18,12,24,.6); color: var(--muted); cursor: pointer; transition: background-color .15s ease, color .15s ease, transform .12s ease; }
+.ep-check:hover { color: var(--cream); border-color: rgba(255,233,214,.4); }
+.ep-check.on { background: rgba(61,220,151,.2); border-color: rgba(61,220,151,.5); color: var(--good); }
+.ep-check:active { transform: scale(.9); }
+.ep-row.seen h4, .ep-row.seen p { opacity: .65; }
+.ep-row.seen .ep-img img { opacity: .6; }
+.season-head { flex-wrap: wrap; row-gap: 10px; }
+.wp-eps .season-head > .btn { margin-left: auto; }
+.report h2 { margin: 6px 0 6px; }
+.report .auth-icon { margin: 4px auto 6px; }
+.report-issues { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.report-note { width: 100%; min-height: 84px; padding: 12px 14px; resize: vertical; margin: 0 0 14px; font: inherit; }
+.report .wide { width: 100%; }
+.report-row { padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.report-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.report-head small { color: var(--muted); }
+.report-reply { margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: rgba(88,101,242,.14); border: 1px solid rgba(88,101,242,.35); line-height: 1.5; white-space: pre-wrap; }
+.report-reply b { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #aab3ff; margin-bottom: 4px; }
+.nav-dot.inline { position: static; margin-left: 6px; }
+.head-tools { flex-wrap: wrap; }
+.ep-row p { padding-right: 40px; }

@@ -1,5 +1,18 @@
 import type { Media, Session, WatchEntry } from './types';
 
+export interface Reminder {
+  media: Media;
+  /** Release date (YYYY-MM-DD) */
+  date: string;
+}
+export interface SentReport {
+  id: string;
+  /** Discord message / thread id used to look up replies */
+  ref?: string;
+  title: string;
+  at: number;
+}
+
 function read<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
@@ -39,6 +52,24 @@ export const store = {
   saveProgress: (v: Record<string, Progress>) => write('comvie.progress', v),
   getDiscordHide: () => read<boolean>('comvie.discordhide', false),
   saveDiscordHide: (v: boolean) => write('comvie.discordhide', v ? true : null),
+  getWatched: () => read<Record<string, number>>('comvie.watched', {}),
+  saveWatched: (v: Record<string, number>) => write('comvie.watched', v),
+  getReminders: () => read<Reminder[]>('comvie.reminders', []),
+  saveReminders: (v: Reminder[]) => write('comvie.reminders', v),
+  getReports: () => read<SentReport[]>('comvie.reports', []),
+  saveReports: (v: SentReport[]) => write('comvie.reports', v),
+  getAutoplay: () => read<boolean>('comvie.autoplay', true),
+  saveAutoplay: (v: boolean) => write('comvie.autoplay', v),
+  getAutoskip: () => read<boolean>('comvie.autoskip', false),
+  saveAutoskip: (v: boolean) => write('comvie.autoskip', v),
+  getRid: () => {
+    let id = read<string>('comvie.rid', '');
+    if (!id) {
+      id = Math.random().toString(36).slice(2, 10);
+      write('comvie.rid', id);
+    }
+    return id;
+  },
   getProvider: () => read<string>('comvie.provider', 'cinesrc'),
   saveProvider: (v: string) => write('comvie.provider', v),
   getProtect: () => read<boolean>('comvie.protect', true),

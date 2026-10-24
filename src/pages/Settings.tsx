@@ -9,6 +9,8 @@ export default function Settings() {
   const { provider, setProvider, session, openAuth, signOut } = useApp();
   const [protect, setProtect] = useState(store.getProtect());
   const [smooth, setSmoothOn] = useState(isSmooth());
+  const [autoplay, setAutoplay] = useState(store.getAutoplay());
+  const [autoskip, setAutoskip] = useState(store.getAutoskip());
 
   return (
     <main className="page pad-top">
@@ -24,6 +26,32 @@ export default function Settings() {
             </label>
           ))}
         </div>
+
+        <h2 className="label">PLAYBACK</h2>
+        <label className="radio">
+          <input
+            type="checkbox"
+            checked={autoplay}
+            onChange={(e) => {
+              setAutoplay(e.target.checked);
+              store.saveAutoplay(e.target.checked);
+            }}
+          />
+          <span>Autoplay next episode</span>
+        </label>
+        <p className="muted small">When an episode ends — or, on Server 1, when the end credits start — the next one plays after a short countdown. This is also how you skip outros.</p>
+        <label className="radio">
+          <input
+            type="checkbox"
+            checked={autoskip}
+            onChange={(e) => {
+              setAutoskip(e.target.checked);
+              store.saveAutoskip(e.target.checked);
+            }}
+          />
+          <span>Skip intros automatically</span>
+        </label>
+        <p className="muted small">Works on Server 1 when it knows where the intro is. On the other servers, use the player's own “Skip intro” button.</p>
 
         <h2 className="label">POPUP PROTECTION</h2>
         <label className="radio">

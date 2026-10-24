@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { tmdb } from './tmdb';
 import { mediaKey } from './types';
+import { isWatched } from './progress';
 import { useApp } from '../state';
 
 const DAY = 86_400_000;
@@ -53,7 +54,7 @@ export function useNewEpisodes(): Set<string> {
           if (!(age >= 0 && age < FRESH_DAYS * DAY)) continue;
           const w = history.find((h) => mediaKey(h.media) === mediaKey(m));
           const seenIt = w?.season != null && w.episode != null && (w.season > la.season || (w.season === la.season && w.episode >= la.episode));
-          if (!seenIt) out.add(mediaKey(m));
+          if (!seenIt && !isWatched('tv', m.id, la.season, la.episode)) out.add(mediaKey(m));
         }
         setFresh(out);
       });

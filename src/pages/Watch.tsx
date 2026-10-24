@@ -3,7 +3,9 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { PosterRow } from '../components/Rows';
 import Icon from '../components/Icon';
 import { votesShort } from '../lib/format';
-import { clearAt, clock, fractionOf, resumeAt, saveAt } from '../lib/progress';
+import ReportModal from '../components/ReportModal';
+import WatchedTick from '../components/WatchedTick';
+import { clearAt, clock, fractionOf, isWatched, resumeAt, saveAt, setSeasonWatched, setWatched } from '../lib/progress';
 import { providerById, providers } from '../lib/providers';
 import { store } from '../lib/storage';
 import { IMG, posterSrc, tmdb } from '../lib/tmdb';
@@ -31,6 +33,11 @@ export default function Watch() {
   const [protect, setProtect] = useState(store.getProtect());
   const [alive, setAlive] = useState(false);
   const [slow, setSlow] = useState(false);
+  const [autonext] = useState(store.getAutoplay());
+  const [autoskip] = useState(store.getAutoskip());
+  const [showReport, setShowReport] = useState(false);
+  const [upNext, setUpNext] = useState<{ s: number; e: number; left: number } | null>(null);
+  const [wv, setWv] = useState(0); // bumps when "watched" marks change
 
   useEffect(() => {
     let live = true;
@@ -74,7 +81,20 @@ export default function Watch() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [t, mid, season, episode, pid, reload]
   );
-  const url = t === 'movie' ? provider.movie(mid, start) : provider.tv(mid, season, episode, start);
+  const opts = { autonext, autoskip };
+  const url = t === 'movie' ? provider.movie(mid, start, opts) : provider.tv(mid, season, episode, start, opts);
+
+  // The player's address only changes when the viewer picks something. When the player itself moves
+  // to the next episode (Server 1 auto-next), the page follows along without reloading it.
+  const internal = useRef<{ s: number; e: number } | null>(null);
+  const [src, setSrc] = useState(url);
+  useEffect(() => {
+    if (internal.current && internal.current.s === season && internal.current.e === episode) {
+      internal.current = null;
+      return;
+    }
+    setSrc(url);
+  }, [url, season, episode]);
 
   // Save the playback position the player reports
   const latest = useRef<{ pos: number; dur: number } | null>(null);
@@ -87,12 +107,26 @@ export default function Watch() {
       if (l) saveAt(t, mid, season, episode, l.pos, l.dur);
     };
     const onMessage = (ev: MessageEvent) => {
+      const n = provider.parseNext?.(ev);
+      if (n) {
+        setAlive(true);
+        if (latest.current) saveAt(t, mid, season, episode, latest.current.pos, latest.current.dur);
+        latest.current = null;
+        setWatched(t, mid, season, episode, true);
+        internal.current = n;
+        setSp({ s: String(n.s), e: String(n.e), p: pid }, { replace: true });
+        return;
+      }
       const r = provider.parse(ev);
       if (!r) return;
       setAlive(true);
       if (r.ended) {
         latest.current = null;
         clearAt(t, mid, season, episode);
+        if (t === 'tv') setWatched(t, mid, season, episode, true);
+        else setWatched('movie', mid, 1, 1, true);
+        setWv((n) => n + 1);
+        if (autonext && !provider.handlesNext && nextRef.current) setUpNext({ ...nextRef.current, left: 10 });
         return;
       }
       if (r.t <= 0) return;
@@ -109,7 +143,7 @@ export default function Watch() {
       window.removeEventListener('pagehide', flush);
       flush();
     };
-  }, [provider, t, mid, season, episode]);
+  }, [provider, t, mid, season, episode, pid, autonext]);
 
   // Tell the viewer when a server is taking suspiciously long
   const sandboxed = protect && provider.sandboxOk;
@@ -128,6 +162,23 @@ export default function Watch() {
     return null;
   }, [t, d, seasonInfo, season, episode]);
 
+  const nextRef = useRef(next);
+  nextRef.current = next;
+
+  // "Up next" countdown for servers that don't advance on their own
+  useEffect(() => setUpNext(null), [season, episode, pid]);
+  useEffect(() => {
+    if (!upNext) return;
+    if (upNext.left <= 0) {
+      setUpNext(null);
+      go(upNext.s, upNext.e);
+      return;
+    }
+    const h = window.setTimeout(() => setUpNext((u) => (u ? { ...u, left: u.left - 1 } : u)), 1000);
+    return () => window.clearTimeout(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [upNext]);
+
   const go = (s: number, e: number) => {
     setSp({ s: String(s), e: String(e), p: pid }, { replace: true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -142,6 +193,7 @@ export default function Watch() {
   const m = d?.media;
   const fav = m ? isFavorite(m) : false;
   const love = m ? isLoved(m) : false;
+  void wv;
   const epName = viewSeason === season ? eps.find((x) => x.number === episode)?.name : undefined;
 
   return (
@@ -158,14 +210,24 @@ export default function Watch() {
       </div>
 
       <iframe
-        key={`${url}|${reload}|${sandboxed}`}
+        key={`${src}|${reload}|${sandboxed}`}
         className="wp-frame"
-        src={url}
+        src={src}
         title={m?.title ?? 'Player'}
         allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
         allowFullScreen
         sandbox={sandbox}
       />
+
+      {upNext && (
+        <div className="wp-upnext" role="status">
+          <span>
+            <Icon name="play" size={13} fill /> Up next: <b>S{upNext.s} · E{upNext.e}</b> in {upNext.left}s
+          </span>
+          <button className="pill on" onClick={() => go(upNext.s, upNext.e)}>Play now</button>
+          <button className="pill" onClick={() => setUpNext(null)}>Cancel</button>
+        </div>
+      )}
 
       {slow && !alive && (
         <div className="wp-slow" role="status">
@@ -183,6 +245,7 @@ export default function Watch() {
           </button>
         ))}
         <button className="pill" onClick={() => setReload((n) => n + 1)}><Icon name="refresh" size={14} />Reload</button>
+        <button className="pill" onClick={() => setShowReport(true)}><Icon name="alert" size={14} />Report a problem</button>
         {t === 'tv' && <span className="chip stat wp-ep">Season {season} • Episode {episode}</span>}
       </div>
       {start > 0 && (
@@ -252,6 +315,17 @@ export default function Watch() {
                   <h2 className="section">Episodes &amp; Seasons</h2>
                   <p className="ep-sub">Select an episode to watch now</p>
                 </div>
+                <button
+                  className="btn small ghost"
+                  onClick={() => {
+                    const nums = eps.map((x) => x.number);
+                    const all = nums.length > 0 && nums.every((n) => isWatched('tv', mid, viewSeason, n));
+                    setSeasonWatched(mid, viewSeason, nums, !all);
+                    setWv((n) => n + 1);
+                  }}
+                >
+                  <Icon name="check" size={14} />{eps.length > 0 && eps.every((x) => isWatched('tv', mid, viewSeason, x.number)) ? 'Unmark season' : 'Mark season watched'}
+                </button>
                 <select className="field select dd" value={viewSeason} onChange={(e) => setViewSeason(Number(e.target.value))} aria-label="Season">
                   {d.seasons.map((s) => (
                     <option key={s.number} value={s.number}>{s.name} ({s.episodeCount} Ep)</option>
@@ -262,10 +336,11 @@ export default function Watch() {
                 {eps.map((e) => {
                   const now = viewSeason === season && e.number === episode;
                   const frac = fractionOf('tv', mid, viewSeason, e.number);
+                  const seen = isWatched('tv', mid, viewSeason, e.number);
                   return (
                     <Link
                       key={e.number}
-                      className={`ep-row ${now ? 'now' : ''}`}
+                      className={`ep-row ${now ? 'now' : ''} ${seen ? 'seen' : ''}`}
                       replace
                       to={`/watch/tv/${mid}?s=${viewSeason}&e=${e.number}&p=${pid}`}
                       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -276,6 +351,13 @@ export default function Watch() {
                         {frac > 0.02 && <span className="ep-prog"><i style={{ width: `${Math.round(frac * 100)}%` }} /></span>}
                       </span>
                       <span>
+                        <WatchedTick
+                          on={seen}
+                          onToggle={() => {
+                            setWatched('tv', mid, viewSeason, e.number, !seen);
+                            setWv((n) => n + 1);
+                          }}
+                        />
                         {e.rating > 0 && <span className="ep-score"><Icon name="star" size={12} fill />{e.rating.toFixed(1)}</span>}
                         <h4>{e.number}. {e.name}</h4>
                         <span className="ep-meta">
@@ -299,6 +381,17 @@ export default function Watch() {
       </div>
 
       <PosterRow title="Recommended Next" items={more} />
+      {showReport && (
+        <ReportModal
+          onClose={() => setShowReport(false)}
+          title={m?.title ?? `Title ${mid}`}
+          type={t}
+          id={mid}
+          season={t === 'tv' ? season : undefined}
+          episode={t === 'tv' ? episode : undefined}
+          server={provider.name}
+        />
+      )}
     </div>
   );
 }
