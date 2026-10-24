@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../components/Icon';
-import { PolicyLinks } from './Legal';
 
 interface QA {
   q: string;
@@ -102,7 +101,6 @@ export default function Help() {
           <b>Can't find what you need?</b>
           <Link to="/contact" className="btn primary small">Get in touch</Link>
         </div>
-        <PolicyLinks />
       </div>
     </main>
   );

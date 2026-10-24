@@ -743,13 +743,19 @@ html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
 .ep-row p { padding-right: 40px; }
 
 
-/* ---- Home: ambient background that follows the billboard ---- */
-.home { position: relative; }
-.home > *:not(.ambient) { position: relative; z-index: 1; }
-.ambient { position: absolute !important; left: 0; right: 0; top: 0; height: 1600px; z-index: 0 !important; overflow: hidden; pointer-events: none; }
-.ambient img { position: absolute; inset: -80px; width: calc(100% + 160px); height: calc(100% + 160px); object-fit: cover; opacity: 0; transition: opacity 1.2s ease; filter: blur(46px) saturate(1.6) brightness(.55); }
+/* ---- Home: frosted-glass background that follows the billboard, top to bottom ---- */
+html.has-ambient body { background: transparent; }
+.ambient { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--bg); }
+.ambient img { position: absolute; inset: -90px; width: calc(100% + 180px); height: calc(100% + 180px); object-fit: cover; opacity: 0; transition: opacity 1.3s ease; filter: blur(54px) saturate(1.9) brightness(.62); }
 .ambient img.on { opacity: 1; }
-.ambient::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18,12,24,.1) 0, rgba(18,12,24,.5) 560px, var(--bg) 1600px); }
+.ambient-glass {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 55% at 18% 0%, rgba(255,255,255,.13), transparent 62%),
+    radial-gradient(90% 50% at 100% 100%, rgba(255,255,255,.05), transparent 60%),
+    linear-gradient(180deg, rgba(18,12,24,.30), rgba(18,12,24,.52));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
 .home .slide > img, .home .billboard-fade { -webkit-mask-image: linear-gradient(180deg, #000 68%, transparent 100%); mask-image: linear-gradient(180deg, #000 68%, transparent 100%); }
 .home .billboard-fade { background: linear-gradient(0deg, rgba(18,12,24,0) 0%, rgba(18,12,24,.22) 55%, rgba(18,12,24,.55)), linear-gradient(90deg, rgba(18,12,24,.85), transparent 65%); }
 
@@ -784,9 +790,6 @@ html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
 .lnotice { display: flex; gap: 10px; align-items: flex-start; margin: 26px 0 0; padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); line-height: 1.55; color: var(--muted); }
 .lnotice .ic { margin-top: 3px; color: var(--accent); }
 .lnotice b { color: var(--cream); }
-.policy-links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 34px 0 6px; padding-top: 18px; border-top: 1px solid var(--line); }
-.policy-links a { color: var(--muted); font-weight: 700; font-size: 14px; }
-.policy-links a:hover { color: var(--cream); }
 .help-search { display: flex; align-items: center; gap: 10px; margin: 18px 0 6px; padding: 0 16px; height: 50px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
 .help-search:focus-within { border-color: var(--accent); }
 .help-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-weight: 600; }

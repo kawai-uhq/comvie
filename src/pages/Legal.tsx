@@ -18,19 +18,6 @@ function Reach() {
   );
 }
 
-/** The shared row of links under every help / legal page */
-export function PolicyLinks() {
-  return (
-    <nav className="policy-links" aria-label="Help and legal">
-      <Link to="/help">Get help</Link>
-      <Link to="/legal/terms">Terms</Link>
-      <Link to="/legal/privacy">Privacy</Link>
-      <Link to="/legal/dmca">DMCA</Link>
-      <Link to="/contact">Contact</Link>
-    </nav>
-  );
-}
-
 function Page({ title, updated = true, children }: { title: string; updated?: boolean; children: ReactNode }) {
   return (
     <main className="page pad-top">
@@ -39,7 +26,6 @@ function Page({ title, updated = true, children }: { title: string; updated?: bo
         <h1 className="title">{title}</h1>
         {updated && <p className="muted small lupdated">Last updated: {UPDATED}</p>}
         {children}
-        <PolicyLinks />
       </div>
     </main>
   );
