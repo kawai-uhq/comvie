@@ -741,16 +741,6 @@ html.smooth .poster:hover .poster-img img { transform: scale(1.05); }
 .ep-row.seen .ep-img img { opacity: .6; }
 .season-head { flex-wrap: wrap; row-gap: 10px; }
 .wp-eps .season-head > .btn { margin-left: auto; }
-.report h2 { margin: 6px 0 6px; }
-.report .auth-icon { margin: 4px auto 6px; }
-.report-issues { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-.report-note { width: 100%; min-height: 84px; padding: 12px 14px; resize: vertical; margin: 0 0 14px; font: inherit; }
-.report .wide { width: 100%; }
-.report-row { padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
-.report-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
-.report-head small { color: var(--muted); }
-.report-reply { margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: rgba(88,101,242,.14); border: 1px solid rgba(88,101,242,.35); line-height: 1.5; white-space: pre-wrap; }
-.report-reply b { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #aab3ff; margin-bottom: 4px; }
 .nav-dot.inline { position: static; margin-left: 6px; }
 .head-tools { flex-wrap: wrap; }
 .ep-row p { padding-right: 40px; }

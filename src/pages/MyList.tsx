@@ -1,20 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Grid, Status } from '../components/Rows';
 import Icon from '../components/Icon';
 import { signInComingSoon } from '../lib/auth';
-import { fetchReplies } from '../lib/report';
-import type { ReportReply } from '../lib/report';
 import { dropReminder, useReminders } from '../lib/reminders';
-import { store } from '../lib/storage';
-import type { SentReport } from '../lib/storage';
 import { useNewEpisodes } from '../lib/useNewEpisodes';
 import { mediaKey } from '../lib/types';
 import type { WatchEntry } from '../lib/types';
 import { useApp } from '../state';
 
-type Tab = 'history' | 'list' | 'loved' | 'reminders' | 'reports';
-const TABS: Tab[] = ['history', 'list', 'loved', 'reminders', 'reports'];
+type Tab = 'history' | 'list' | 'loved' | 'reminders';
+const TABS: Tab[] = ['history', 'list', 'loved', 'reminders'];
 
 const when = (t: number) =>
   new Date(t).toLocaleString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -67,45 +63,6 @@ function RemindersPanel() {
   );
 }
 
-function ReportsPanel() {
-  const reports: SentReport[] = store.getReports();
-  const [replies, setReplies] = useState<Record<string, ReportReply[] | null>>({});
-  useEffect(() => {
-    let live = true;
-    reports.slice(0, 10).forEach((r) => {
-      if (!r.ref) return;
-      void fetchReplies(r.ref).then((x) => live && setReplies((cur) => ({ ...cur, [r.id]: x })));
-    });
-    return () => {
-      live = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  if (!reports.length) return <Status kind="empty" text="You haven't reported anything. Use “Report a problem” on the player page if a server isn't working." />;
-  return (
-    <div className="hlist">
-      {reports.map((r) => {
-        const rep = replies[r.id];
-        return (
-          <div className="report-row" key={r.id}>
-            <div className="report-head">
-              <strong>{r.title}</strong>
-              <small>#{r.id} · {when(r.at)}</small>
-            </div>
-            {rep && rep.length > 0 ? (
-              rep.map((x, i) => (
-                <p className="report-reply" key={i}><b>Team reply</b>{x.text}</p>
-              ))
-            ) : (
-              <p className="muted small">{r.ref ? 'Waiting for a reply from the team…' : 'Sent to the team.'}</p>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export default function MyList() {
   const { favorites, loved, history, removeWatch, session, openAuth } = useApp();
   const fresh = useNewEpisodes();
@@ -129,7 +86,6 @@ export default function MyList() {
             <button role="tab" aria-selected={tab === 'list'} className={`pill ${tab === 'list' ? 'on' : ''}`} onClick={() => setTab('list')}><Icon name="bookmark" size={15} />Watchlist ({favorites.length})</button>
             <button role="tab" aria-selected={tab === 'loved'} className={`pill ${tab === 'loved' ? 'on' : ''}`} onClick={() => setTab('loved')}><Icon name="heart" size={15} />Favorites ({loved.length})</button>
             <button role="tab" aria-selected={tab === 'reminders'} className={`pill ${tab === 'reminders' ? 'on' : ''}`} onClick={() => setTab('reminders')}><Icon name="bell" size={15} />Reminders{due > 0 && <i className="nav-dot inline" />}</button>
-            <button role="tab" aria-selected={tab === 'reports'} className={`pill ${tab === 'reports' ? 'on' : ''}`} onClick={() => setTab('reports')}><Icon name="alert" size={15} />Reports</button>
           </div>
           {tab === 'history' && history.length > 0 && (
             <button
@@ -161,8 +117,6 @@ export default function MyList() {
           )
         ) : tab === 'reminders' ? (
           <RemindersPanel />
-        ) : tab === 'reports' ? (
-          <ReportsPanel />
         ) : loved.length === 0 ? (
           <Status kind="empty" text="No favorites yet. Tap the heart on titles you love." />
         ) : (

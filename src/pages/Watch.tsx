@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { PosterRow } from '../components/Rows';
 import Icon from '../components/Icon';
 import { votesShort } from '../lib/format';
-import ReportModal from '../components/ReportModal';
 import WatchedTick from '../components/WatchedTick';
 import { clearAt, clock, fractionOf, isWatched, resumeAt, saveAt, setSeasonWatched, setWatched } from '../lib/progress';
 import { providerById, providers } from '../lib/providers';
@@ -35,7 +34,6 @@ export default function Watch() {
   const [slow, setSlow] = useState(false);
   const [autonext] = useState(store.getAutoplay());
   const [autoskip] = useState(store.getAutoskip());
-  const [showReport, setShowReport] = useState(false);
   const [upNext, setUpNext] = useState<{ s: number; e: number; left: number } | null>(null);
   const [wv, setWv] = useState(0); // bumps when "watched" marks change
 
@@ -245,7 +243,6 @@ export default function Watch() {
           </button>
         ))}
         <button className="pill" onClick={() => setReload((n) => n + 1)}><Icon name="refresh" size={14} />Reload</button>
-        <button className="pill" onClick={() => setShowReport(true)}><Icon name="alert" size={14} />Report a problem</button>
         {t === 'tv' && <span className="chip stat wp-ep">Season {season} • Episode {episode}</span>}
       </div>
       {start > 0 && (
@@ -381,17 +378,6 @@ export default function Watch() {
       </div>
 
       <PosterRow title="Recommended Next" items={more} />
-      {showReport && (
-        <ReportModal
-          onClose={() => setShowReport(false)}
-          title={m?.title ?? `Title ${mid}`}
-          type={t}
-          id={mid}
-          season={t === 'tv' ? season : undefined}
-          episode={t === 'tv' ? episode : undefined}
-          server={provider.name}
-        />
-      )}
     </div>
   );
 }
